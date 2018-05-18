@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt", "rbt\rbt.csproj", "{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt.Excel.Test", "rbt.Excel.Test\rbt.Excel.Test.csproj", "{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt.DB.Test", "rbt.DB.Test\rbt.DB.Test.csproj", "{1371A43D-881F-47D5-87D7-96013826A72F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1371A43D-881F-47D5-87D7-96013826A72F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1371A43D-881F-47D5-87D7-96013826A72F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1371A43D-881F-47D5-87D7-96013826A72F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1371A43D-881F-47D5-87D7-96013826A72F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5BD65CA7-8885-44CA-8EAD-DB230DD121F8}
+	EndGlobalSection
+EndGlobal
