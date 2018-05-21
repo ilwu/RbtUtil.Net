@@ -6,7 +6,7 @@ namespace rbt.util
 {
     public class StartAppUtil
     {
-        public static string CreateProcess(string app, string path)
+        public static string CreateProcess(string app, string path, bool IsSilenceMode = true)
         {
             bool result;
             IntPtr hToken = WindowsIdentity.GetCurrent().Token;
@@ -22,7 +22,7 @@ namespace rbt.util
             int dwSessionID = WTSGetActiveConsoleSessionId();
             result = WTSQueryUserToken(dwSessionID, out hToken);
 
-            if (!result)
+            if (!result && !IsSilenceMode)
             {
                 ShowMessageBox("WTSQueryUserToken failed", "AlertService Message");
             }
@@ -36,7 +36,7 @@ namespace rbt.util
                   ref hDupedToken
                );
 
-            if (!result)
+            if (!result && !IsSilenceMode)
             {
                 ShowMessageBox("DuplicateTokenEx failed", "AlertService Message");
             }
@@ -44,7 +44,7 @@ namespace rbt.util
             IntPtr lpEnvironment = IntPtr.Zero;
             result = CreateEnvironmentBlock(out lpEnvironment, hDupedToken, false);
 
-            if (!result)
+            if (!result && !IsSilenceMode)
             {
                 ShowMessageBox("CreateEnvironmentBlock failed", "AlertService Message");
             }
