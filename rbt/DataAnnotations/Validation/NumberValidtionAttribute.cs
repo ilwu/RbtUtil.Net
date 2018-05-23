@@ -20,6 +20,14 @@ namespace rbt.DataAnnotations.Validation
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            //======================================
+            //未設定長度時不檢核
+            //======================================
+            if (DataPrecision == 0 && DataScale == 0)
+            {
+                return ValidationResult.Success;
+            }
+
             var numStr = StringUtil.SafeTrim(value);
             //======================================
             //傳入為空時不在此檢核 (由必填觸發)

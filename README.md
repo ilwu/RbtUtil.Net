@@ -1,2 +1,2 @@
 # RbtUtil.Net
-RbtUtil for Net
+RbtUtil for .NET

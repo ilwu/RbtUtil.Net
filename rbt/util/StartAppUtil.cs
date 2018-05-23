@@ -1,33 +1,56 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 namespace rbt.util
 {
+    /// <summary>
+    ///
+    /// </summary>
     public class StartAppUtil
     {
+        /// <summary>
+        /// LOG
+        /// </summary>
+        private static readonly ILog LOG = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="IsSilenceMode"></param>
+        /// <returns></returns>
         public static string CreateProcess(string app, string path, bool IsSilenceMode = true)
         {
             bool result;
             IntPtr hToken = WindowsIdentity.GetCurrent().Token;
             IntPtr hDupedToken = IntPtr.Zero;
 
-            PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
-            SECURITY_ATTRIBUTES sa = new SECURITY_ATTRIBUTES();
+            var pi = new WinApi.PROCESS_INFORMATION();
+            var sa = new WinApi.SECURITY_ATTRIBUTES();
             sa.Length = Marshal.SizeOf(sa);
 
-            STARTUPINFO si = new STARTUPINFO();
+            var si = new WinApi.STARTUPINFO();
             si.cb = Marshal.SizeOf(si);
 
-            int dwSessionID = WTSGetActiveConsoleSessionId();
-            result = WTSQueryUserToken(dwSessionID, out hToken);
+            int dwSessionID = WinApi.WTSGetActiveConsoleSessionId();
+            LOG.Debug("session id:" + dwSessionID);
+            result = WinApi.WTSQueryUserToken(dwSessionID, out hToken);
 
-            if (!result && !IsSilenceMode)
+            if (!result)
             {
-                ShowMessageBox("WTSQueryUserToken failed", "AlertService Message");
+                var error = "WTSQueryUserToken failed :" + Marshal.GetLastWin32Error();
+
+                LOG.Error(error);
+                if (!IsSilenceMode)
+                {
+                    WinApi.ShowMessageBox(error, "CreateProcess Error");
+                }
             }
 
-            result = DuplicateTokenEx(
+            result = WinApi.DuplicateTokenEx(
                   hToken,
                   GENERIC_ALL_ACCESS,
                   ref sa,
@@ -36,20 +59,32 @@ namespace rbt.util
                   ref hDupedToken
                );
 
-            if (!result && !IsSilenceMode)
+            if (!result)
             {
-                ShowMessageBox("DuplicateTokenEx failed", "AlertService Message");
+                var error = "DuplicateTokenEx failed :" + Marshal.GetLastWin32Error();
+
+                LOG.Error(error);
+                if (!IsSilenceMode)
+                {
+                    WinApi.ShowMessageBox(error, "CreateProcess Error");
+                }
             }
 
             IntPtr lpEnvironment = IntPtr.Zero;
-            result = CreateEnvironmentBlock(out lpEnvironment, hDupedToken, false);
+            result = WinApi.CreateEnvironmentBlock(out lpEnvironment, hDupedToken, false);
 
-            if (!result && !IsSilenceMode)
+            if (!result)
             {
-                ShowMessageBox("CreateEnvironmentBlock failed", "AlertService Message");
+                var error = "CreateEnvironmentBlock failed :" + Marshal.GetLastWin32Error();
+
+                LOG.Error(error);
+                if (!IsSilenceMode)
+                {
+                    WinApi.ShowMessageBox(error, "CreateProcess Error");
+                }
             }
 
-            result = CreateProcessAsUser(
+            result = WinApi.CreateProcessAsUser(
                                  hDupedToken,
                                  app,
                                  String.Empty,
@@ -70,84 +105,18 @@ namespace rbt.util
             }
 
             if (pi.hProcess != IntPtr.Zero)
-                CloseHandle(pi.hProcess);
+                WinApi.CloseHandle(pi.hProcess);
             if (pi.hThread != IntPtr.Zero)
-                CloseHandle(pi.hThread);
+                WinApi.CloseHandle(pi.hThread);
             if (hDupedToken != IntPtr.Zero)
-                CloseHandle(hDupedToken);
+                WinApi.CloseHandle(hDupedToken);
 
             return resultMessage;
         }
 
-        public static IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
+        private const int GENERIC_ALL_ACCESS = 0x10000000;
 
-        public static void ShowMessageBox(string message, string title)
-        {
-            int resp = 0;
-            WTSSendMessage(
-                WTS_CURRENT_SERVER_HANDLE,
-                WTSGetActiveConsoleSessionId(),
-                title, title.Length,
-                message, message.Length,
-                0, 0, out resp, false);
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern int WTSGetActiveConsoleSessionId();
-
-        [DllImport("wtsapi32.dll", SetLastError = true)]
-        public static extern bool WTSSendMessage(
-            IntPtr hServer,
-            int SessionId,
-            String pTitle,
-            int TitleLength,
-            String pMessage,
-            int MessageLength,
-            int Style,
-            int Timeout,
-            out int pResponse,
-            bool bWait);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct STARTUPINFO
-        {
-            public Int32 cb;
-            public string lpReserved;
-            public string lpDesktop;
-            public string lpTitle;
-            public Int32 dwX;
-            public Int32 dwY;
-            public Int32 dwXSize;
-            public Int32 dwXCountChars;
-            public Int32 dwYCountChars;
-            public Int32 dwFillAttribute;
-            public Int32 dwFlags;
-            public Int16 wShowWindow;
-            public Int16 cbReserved2;
-            public IntPtr lpReserved2;
-            public IntPtr hStdInput;
-            public IntPtr hStdOutput;
-            public IntPtr hStdError;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct PROCESS_INFORMATION
-        {
-            public IntPtr hProcess;
-            public IntPtr hThread;
-            public Int32 dwProcessID;
-            public Int32 dwThreadID;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct SECURITY_ATTRIBUTES
-        {
-            public Int32 Length;
-            public IntPtr lpSecurityDescriptor;
-            public bool bInheritHandle;
-        }
-
-        public enum SECURITY_IMPERSONATION_LEVEL
+        private enum SECURITY_IMPERSONATION_LEVEL
         {
             SecurityAnonymous,
             SecurityIdentification,
@@ -155,51 +124,10 @@ namespace rbt.util
             SecurityDelegation
         }
 
-        public enum TOKEN_TYPE
+        private enum TOKEN_TYPE
         {
             TokenPrimary = 1,
             TokenImpersonation
         }
-
-        public const int GENERIC_ALL_ACCESS = 0x10000000;
-
-        [DllImport("kernel32.dll", SetLastError = true,
-            CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern bool CloseHandle(IntPtr handle);
-
-        [DllImport("advapi32.dll", SetLastError = true,
-            CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-        public static extern bool CreateProcessAsUser(
-            IntPtr hToken,
-            string lpApplicationName,
-            string lpCommandLine,
-            ref SECURITY_ATTRIBUTES lpProcessAttributes,
-            ref SECURITY_ATTRIBUTES lpThreadAttributes,
-            bool bInheritHandle,
-            Int32 dwCreationFlags,
-            IntPtr lpEnvrionment,
-            string lpCurrentDirectory,
-            ref STARTUPINFO lpStartupInfo,
-            ref PROCESS_INFORMATION lpProcessInformation);
-
-        [DllImport("advapi32.dll", SetLastError = true)]
-        public static extern bool DuplicateTokenEx(
-            IntPtr hExistingToken,
-            Int32 dwDesiredAccess,
-            ref SECURITY_ATTRIBUTES lpThreadAttributes,
-            Int32 ImpersonationLevel,
-            Int32 dwTokenType,
-            ref IntPtr phNewToken);
-
-        [DllImport("wtsapi32.dll", SetLastError = true)]
-        public static extern bool WTSQueryUserToken(
-            Int32 sessionId,
-            out IntPtr Token);
-
-        [DllImport("userenv.dll", SetLastError = true)]
-        private static extern bool CreateEnvironmentBlock(
-            out IntPtr lpEnvironment,
-            IntPtr hToken,
-            bool bInherit);
     }
 }
