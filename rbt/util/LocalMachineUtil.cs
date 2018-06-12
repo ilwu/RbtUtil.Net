@@ -59,7 +59,7 @@ namespace rbt.util
                     if (addres.AddressFamily == AddressFamily.InterNetwork)
                     {
                         var ip = addres.ToString();
-                        if ("::1" == ip)
+                        if ("::1".Equals(ip))
                         {
                             ip = "127.0.0.1";
                         }
@@ -88,7 +88,7 @@ namespace rbt.util
                     if (addres.AddressFamily == AddressFamily.InterNetwork)
                     {
                         var ip = addres.ToString();
-                        if ("::1" == ip)
+                        if ("::1".Equals(ip))
                         {
                             ip = "127.0.0.1";
                         }
@@ -224,38 +224,6 @@ namespace rbt.util
 
             #region Win32 Structs
 
-            public enum SW
-            {
-                SW_HIDE = 0,
-                SW_SHOWNORMAL = 1,
-                SW_NORMAL = 1,
-                SW_SHOWMINIMIZED = 2,
-                SW_SHOWMAXIMIZED = 3,
-                SW_MAXIMIZE = 3,
-                SW_SHOWNOACTIVATE = 4,
-                SW_SHOW = 5,
-                SW_MINIMIZE = 6,
-                SW_SHOWMINNOACTIVE = 7,
-                SW_SHOWNA = 8,
-                SW_RESTORE = 9,
-                SW_SHOWDEFAULT = 10,
-                SW_MAX = 10
-            }
-
-            public enum WTS_CONNECTSTATE_CLASS
-            {
-                WTSActive,
-                WTSConnected,
-                WTSConnectQuery,
-                WTSShadow,
-                WTSDisconnected,
-                WTSIdle,
-                WTSListen,
-                WTSReset,
-                WTSDown,
-                WTSInit
-            }
-
             [StructLayout(LayoutKind.Sequential)]
             public struct PROCESS_INFORMATION
             {
@@ -310,7 +278,7 @@ namespace rbt.util
                 [MarshalAs(UnmanagedType.LPStr)]
                 public readonly String pWinStationName;
 
-                public readonly WTS_CONNECTSTATE_CLASS State;
+                public readonly WinApi.WTS_CONNECTSTATE_CLASS State;
             }
 
             #endregion Win32 Structs
@@ -335,7 +303,7 @@ namespace rbt.util
                         var si = (WTS_SESSION_INFO)Marshal.PtrToStructure((IntPtr)current, typeof(WTS_SESSION_INFO));
                         current += arrayElementSize;
 
-                        if (si.State == WTS_CONNECTSTATE_CLASS.WTSActive)
+                        if (si.State == WinApi.WTS_CONNECTSTATE_CLASS.WTSActive)
                         {
                             activeSessionId = si.SessionID;
                         }
@@ -498,7 +466,7 @@ namespace rbt.util
                 }
 
                 uint dwCreationFlags = ProcessExtensions.CREATE_UNICODE_ENVIRONMENT | (uint)(visible ? ProcessExtensions.CREATE_NEW_CONSOLE : ProcessExtensions.CREATE_NO_WINDOW);
-                startInfo.wShowWindow = (short)(visible ? ProcessExtensions.SW.SW_SHOW : ProcessExtensions.SW.SW_HIDE);
+                startInfo.wShowWindow = (short)(visible ? WinApi.SW.SW_SHOW : WinApi.SW.SW_HIDE);
                 startInfo.lpDesktop = "winsta0\\default";
 
                 if (!ProcessExtensions.CreateEnvironmentBlock(ref pEnv, hUserToken, false))

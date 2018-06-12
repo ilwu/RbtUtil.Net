@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CSharpJExcel.Jxl.Format;
+using Newtonsoft.Json;
 using rbt.util.excel;
 using rbt.util.excel.bean.expt;
 using rbt.util.excel.bean.expt.config;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -17,6 +19,13 @@ namespace rbt.Excel.Test
         public Form1()
         {
             InitializeComponent();
+            MyTest();
+        }
+
+        public void MyTest()
+        {
+            Type myType = typeof(Colour);
+            PropertyInfo myPropInfo = myType.GetProperty("AQUA");
         }
 
         protected object BaseUtil_GetObjectFromTemp(string fileName, Type type)

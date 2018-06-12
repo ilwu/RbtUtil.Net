@@ -134,7 +134,7 @@ namespace rbt.util.excel
             var resultList = new List<TModel>();
             //取得傳入 model 所有 property
             var properties = typeof(TModel).GetProperties();
-            var ConvertFuncMap = GetConvertFuncMap();
+            var ConvertFuncMap = ClassUtil.GetConvertFuncMap();
 
             foreach (var rowDataDic in dicList)
             {
@@ -174,58 +174,6 @@ namespace rbt.util.excel
             }
 
             return resultList;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<Type, Func<object, object>> GetConvertFuncMap()
-        {
-            var ConvertFuncMap = new Dictionary<Type, Func<object, object>>();
-
-            ConvertFuncMap.Add(typeof(Int16?), (object x) =>
-            {
-                return x != null ? Convert.ToInt16(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(Int16), (object x) =>
-            {
-                return x != null ? Convert.ToInt16(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(Int32?), (object x) =>
-            {
-                return x != null ? Convert.ToInt32(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(Int32), (object x) =>
-            {
-                return x != null ? Convert.ToInt32(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(Int64?), (object x) =>
-            {
-                return x != null ? Convert.ToInt64(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(Int64), (object x) =>
-            {
-                return x != null ? Convert.ToInt64(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(decimal?), (object x) =>
-            {
-                return x != null ? Convert.ToDecimal(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(decimal), (object x) =>
-            {
-                return x != null ? Convert.ToDecimal(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(double?), (object x) =>
-            {
-                return x != null ? Convert.ToDouble(x) : x;
-            });
-            ConvertFuncMap.Add(typeof(double), (object x) =>
-            {
-                return x != null ? Convert.ToDouble(x) : x;
-            });
-
-            return ConvertFuncMap;
         }
 
         /// <summary>
