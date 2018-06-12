@@ -30,6 +30,15 @@ namespace rbt.util.db.sqlite
         }
 
         /// <summary>
+        /// Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        public override DbConnectionStringBuilder GetConnectionStringBuilder()
+        {
+            return new SQLiteConnectionStringBuilder(GetConnectionString());
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="name"></param>

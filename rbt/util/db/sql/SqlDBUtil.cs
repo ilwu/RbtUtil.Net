@@ -13,6 +13,15 @@ namespace rbt.util.db.sql
         }
 
         /// <summary>
+        /// Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        public override DbConnectionStringBuilder GetConnectionStringBuilder()
+        {
+            return new SqlConnectionStringBuilder(GetConnectionString());
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <returns></returns>

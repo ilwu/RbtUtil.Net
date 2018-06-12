@@ -13,6 +13,15 @@ namespace rbt.util.db.oracle
         }
 
         /// <summary>
+        /// Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        public override DbConnectionStringBuilder GetConnectionStringBuilder()
+        {
+            return new OracleConnectionStringBuilder(GetConnectionString());
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <returns></returns>

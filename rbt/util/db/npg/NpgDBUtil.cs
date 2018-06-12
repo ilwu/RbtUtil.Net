@@ -13,6 +13,15 @@ namespace rbt.util.db.npg
         }
 
         /// <summary>
+        /// Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        public override DbConnectionStringBuilder GetConnectionStringBuilder()
+        {
+            return new NpgsqlConnectionStringBuilder(GetConnectionString());
+        }
+
+        /// <summary>
         ///
         /// </summary>
         /// <returns></returns>

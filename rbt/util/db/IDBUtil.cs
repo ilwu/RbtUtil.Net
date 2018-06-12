@@ -16,6 +16,13 @@ namespace rbt.util.db
         DbConnection GetConnection();
 
         /// <summary>
+        ///     Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        DbConnectionStringBuilder GetConnectionStringBuilder();
+
+        /// <summary>
         ///  查詢單一 Table 且 order by
         /// </summary>
         /// <typeparam name="T"></typeparam>

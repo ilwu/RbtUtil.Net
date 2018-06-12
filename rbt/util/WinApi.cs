@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace rbt.util
 {
@@ -12,61 +8,58 @@ namespace rbt.util
     /// </summary>
     public class WinApi
     {
-        /// <summary>
-        /// 取得目前的 Session ID
-        /// </summary>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern int WTSGetActiveConsoleSessionId();
+        #region Win32 Structs
 
-        public static IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
-
-        /// <summary>
-        /// 顯示對話框
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="title"></param>
-        public static void ShowMessageBox(string message, string title)
+        public enum SECURITY_IMPERSONATION_LEVEL
         {
-            int resp = 0;
-            WinApi.WTSSendMessage(
-                WTS_CURRENT_SERVER_HANDLE,
-                WinApi.WTSGetActiveConsoleSessionId(),
-                title, title.Length,
-                message, message.Length,
-                0, 0, out resp, false);
+            SecurityAnonymous = 0,
+            SecurityIdentification = 1,
+            SecurityImpersonation = 2,
+            SecurityDelegation = 3,
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="hServer"></param>
-        /// <param name="SessionId"></param>
-        /// <param name="pTitle"></param>
-        /// <param name="TitleLength"></param>
-        /// <param name="pMessage"></param>
-        /// <param name="MessageLength"></param>
-        /// <param name="Style"></param>
-        /// <param name="Timeout"></param>
-        /// <param name="pResponse"></param>
-        /// <param name="bWait"></param>
-        /// <returns></returns>
-        [DllImport("wtsapi32.dll", SetLastError = true)]
-        private static extern bool WTSSendMessage(
-            IntPtr hServer,
-            int SessionId,
-            String pTitle,
-            int TitleLength,
-            String pMessage,
-            int MessageLength,
-            int Style,
-            int Timeout,
-            out int pResponse,
-            bool bWait);
+        public enum SW
+        {
+            SW_HIDE = 0,
+            SW_SHOWNORMAL = 1,
+            SW_NORMAL = 1,
+            SW_SHOWMINIMIZED = 2,
+            SW_SHOWMAXIMIZED = 3,
+            SW_MAXIMIZE = 3,
+            SW_SHOWNOACTIVATE = 4,
+            SW_SHOW = 5,
+            SW_MINIMIZE = 6,
+            SW_SHOWMINNOACTIVE = 7,
+            SW_SHOWNA = 8,
+            SW_RESTORE = 9,
+            SW_SHOWDEFAULT = 10,
+            SW_MAX = 10
+        }
 
-        [DllImport("kernel32.dll", SetLastError = true,
-            CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern bool CloseHandle(IntPtr handle);
+        public enum TOKEN_TYPE
+        {
+            TokenPrimary = 1,
+            TokenImpersonation = 2
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PerformanceInformation
+        {
+            public int Size;
+            public IntPtr CommitTotal;
+            public IntPtr CommitLimit;
+            public IntPtr CommitPeak;
+            public IntPtr PhysicalTotal;
+            public IntPtr PhysicalAvailable;
+            public IntPtr SystemCache;
+            public IntPtr KernelTotal;
+            public IntPtr KernelPaged;
+            public IntPtr KernelNonPaged;
+            public IntPtr PageSize;
+            public int HandlesCount;
+            public int ProcessCount;
+            public int ThreadCount;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct PROCESS_INFORMATION
@@ -107,59 +100,18 @@ namespace rbt.util
             public IntPtr hStdError;
         }
 
-        [DllImport("advapi32.dll", SetLastError = true,
-            CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-        public static extern bool CreateProcessAsUser(
-            IntPtr hToken,
-            string lpApplicationName,
-            string lpCommandLine,
-            ref SECURITY_ATTRIBUTES lpProcessAttributes,
-            ref SECURITY_ATTRIBUTES lpThreadAttributes,
-            bool bInheritHandle,
-            Int32 dwCreationFlags,
-            IntPtr lpEnvrionment,
-            string lpCurrentDirectory,
-            ref STARTUPINFO lpStartupInfo,
-            ref PROCESS_INFORMATION lpProcessInformation);
+        public struct WTS_SESSION_INFO
+        {
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string pWinStationName;
 
-        [DllImport("advapi32.dll", SetLastError = true)]
-        public static extern bool DuplicateTokenEx(
-            IntPtr hExistingToken,
-            Int32 dwDesiredAccess,
-            ref SECURITY_ATTRIBUTES lpThreadAttributes,
-            Int32 ImpersonationLevel,
-            Int32 dwTokenType,
-            ref IntPtr phNewToken);
+            public int SessionID;
+            public WTS_CONNECTSTATE_CLASS state;
+        }
 
-        [DllImport("wtsapi32.dll", SetLastError = true)]
-        public static extern bool WTSQueryUserToken(
-            Int32 sessionId,
-            out IntPtr Token);
+        #endregion Win32 Structs
 
-        [DllImport("userenv.dll", SetLastError = true)]
-        public static extern bool CreateEnvironmentBlock(
-            out IntPtr lpEnvironment,
-            IntPtr hToken,
-            bool bInherit);
-
-        //[DllImport("wtsapi32.dll", SetLastError = true)]
-        //public static extern int WTSEnumerateSessions(
-        //                System.IntPtr hServer,
-        //                int Reserved,
-        //                int Version,
-        //                ref System.IntPtr ppSessionInfo,
-        //                ref int pCount);
-
-        [DllImport("wtsapi32", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool WTSEnumerateSessions(
-            int hServer,
-            int Reserved,
-            int Version,
-            ref long ppSessionInfo,
-            ref int pCount);
-
-        [DllImport("wtsapi32.dll")]
-        public static extern void WTSFreeMemory(System.IntPtr pMemory);
+        public static IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
 
         public enum WTS_CONNECTSTATE_CLASS
         {
@@ -175,24 +127,56 @@ namespace rbt.util
             WTSInit,
         }
 
-        public struct WTS_SESSION_INFO
-        {
-            public int SessionID;
+        [DllImport("kernel32.dll", SetLastError = true,
+                    CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern bool CloseHandle(IntPtr handle);
 
-            [MarshalAs(UnmanagedType.LPTStr)]
-            public string pWinStationName;
+        [DllImport("userenv.dll", SetLastError = true)]
+        public static extern bool CreateEnvironmentBlock(
+            out IntPtr lpEnvironment,
+            IntPtr hToken,
+            bool bInherit);
 
-            public WTS_CONNECTSTATE_CLASS state;
-        }
+        [DllImport("advapi32.dll", SetLastError = true,
+                    CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
+        public static extern bool CreateProcessAsUser(
+            IntPtr hToken,
+            string lpApplicationName,
+            string lpCommandLine,
+            ref SECURITY_ATTRIBUTES lpProcessAttributes,
+            ref SECURITY_ATTRIBUTES lpThreadAttributes,
+            bool bInheritHandle,
+            Int32 dwCreationFlags,
+            IntPtr lpEnvrionment,
+            string lpCurrentDirectory,
+            ref STARTUPINFO lpStartupInfo,
+            ref PROCESS_INFORMATION lpProcessInformation);
+
+        [DllImport("userenv.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DestroyEnvironmentBlock(IntPtr lpEnvironment);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool DuplicateTokenEx(
+            IntPtr hExistingToken,
+            Int32 dwDesiredAccess,
+            ref SECURITY_ATTRIBUTES lpThreadAttributes,
+            Int32 ImpersonationLevel,
+            Int32 dwTokenType,
+            ref IntPtr phNewToken);
+
+        [DllImport("psapi.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetPerformanceInfo([Out] out WinApi.PerformanceInformation PerformanceInformation, [In] int Size);
 
         public static WTS_SESSION_INFO[] SessionEnumeration()
         {
             //Set handle of terminal server as the current terminal server
-            int hServer = 0;
+            IntPtr hServer = IntPtr.Zero;
             bool RetVal;
-            long lpBuffer = 0;
+            IntPtr lpBuffer = IntPtr.Zero;
             int Count = 0;
-            long p;
+            IntPtr p;
             WTS_SESSION_INFO Session_Info = new WTS_SESSION_INFO();
             WTS_SESSION_INFO[] arrSessionInfo;
             RetVal = WTSEnumerateSessions(hServer, 0, 1, ref lpBuffer, ref Count);
@@ -204,10 +188,10 @@ namespace rbt.util
                 p = lpBuffer;
                 for (i = 0; i < Count; i++)
                 {
-                    arrSessionInfo[i] = (WTS_SESSION_INFO)Marshal.PtrToStructure(new IntPtr(p), Session_Info.GetType());
+                    arrSessionInfo[i] = (WTS_SESSION_INFO)Marshal.PtrToStructure(p, Session_Info.GetType());
                     p += Marshal.SizeOf(Session_Info.GetType());
                 }
-                WTSFreeMemory(new IntPtr(lpBuffer));
+                WTSFreeMemory(lpBuffer);
             }
             else
             {
@@ -215,57 +199,78 @@ namespace rbt.util
             }
             return arrSessionInfo;
         }
-    }
 
-    public static class PerformanceInfo
-    {
-        [DllImport("psapi.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetPerformanceInfo([Out] out PerformanceInformation PerformanceInformation, [In] int Size);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct PerformanceInformation
+        /// <summary>
+        /// 顯示對話框
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="title"></param>
+        public static void ShowMessageBox(string message, string title)
         {
-            public int Size;
-            public IntPtr CommitTotal;
-            public IntPtr CommitLimit;
-            public IntPtr CommitPeak;
-            public IntPtr PhysicalTotal;
-            public IntPtr PhysicalAvailable;
-            public IntPtr SystemCache;
-            public IntPtr KernelTotal;
-            public IntPtr KernelPaged;
-            public IntPtr KernelNonPaged;
-            public IntPtr PageSize;
-            public int HandlesCount;
-            public int ProcessCount;
-            public int ThreadCount;
+            int resp = 0;
+            WinApi.WTSSendMessage(
+                WTS_CURRENT_SERVER_HANDLE,
+                WinApi.WTSGetActiveConsoleSessionId(),
+                title, title.Length,
+                message, message.Length,
+                0, 0, out resp, false);
         }
 
-        public static Int64 GetPhysicalAvailableMemoryInMiB()
-        {
-            PerformanceInformation pi = new PerformanceInformation();
-            if (GetPerformanceInfo(out pi, Marshal.SizeOf(pi)))
-            {
-                return Convert.ToInt64((pi.PhysicalAvailable.ToInt64() * pi.PageSize.ToInt64() / 1048576));
-            }
-            else
-            {
-                return -1;
-            }
-        }
+        [DllImport("wtsapi32", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern bool WTSEnumerateSessions(
+            IntPtr hServer,
+            int Reserved,
+            int Version,
+            ref IntPtr ppSessionInfo,
+            ref int pCount);
 
-        public static Int64 GetTotalMemoryInMiB()
-        {
-            PerformanceInformation pi = new PerformanceInformation();
-            if (GetPerformanceInfo(out pi, Marshal.SizeOf(pi)))
-            {
-                return Convert.ToInt64((pi.PhysicalTotal.ToInt64() * pi.PageSize.ToInt64() / 1048576));
-            }
-            else
-            {
-                return -1;
-            }
-        }
+        //[DllImport("wtsapi32.dll", SetLastError = true)]
+        //public static extern int WTSEnumerateSessions(
+        //                System.IntPtr hServer,
+        //                int Reserved,
+        //                int Version,
+        //                ref System.IntPtr ppSessionInfo,
+        //                ref int pCount);
+        [DllImport("wtsapi32.dll")]
+        public static extern void WTSFreeMemory(System.IntPtr pMemory);
+
+        /// <summary>
+        /// 取得目前的 Session ID
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern int WTSGetActiveConsoleSessionId();
+
+        [DllImport("wtsapi32.dll", SetLastError = true)]
+        public static extern bool WTSQueryUserToken(
+            Int32 sessionId,
+            out IntPtr Token);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="hServer"></param>
+        /// <param name="SessionId"></param>
+        /// <param name="pTitle"></param>
+        /// <param name="TitleLength"></param>
+        /// <param name="pMessage"></param>
+        /// <param name="MessageLength"></param>
+        /// <param name="Style"></param>
+        /// <param name="Timeout"></param>
+        /// <param name="pResponse"></param>
+        /// <param name="bWait"></param>
+        /// <returns></returns>
+        [DllImport("wtsapi32.dll", SetLastError = true)]
+        private static extern bool WTSSendMessage(
+            IntPtr hServer,
+            int SessionId,
+            String pTitle,
+            int TitleLength,
+            String pMessage,
+            int MessageLength,
+            int Style,
+            int Timeout,
+            out int pResponse,
+            bool bWait);
     }
 }

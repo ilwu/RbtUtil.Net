@@ -66,6 +66,16 @@ namespace rbt.util.db
         public abstract DbConnection GetConnection();
 
         // ==============================================================================================
+        // Get ConnectionStringBuilder
+        // ==============================================================================================
+        /// <summary>
+        ///     Get ConnectionStringBuilder
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        public abstract DbConnectionStringBuilder GetConnectionStringBuilder();
+
+        // ==============================================================================================
         // QUERY Count
         // ==============================================================================================
 

@@ -293,8 +293,6 @@ namespace rbt.util
         /// <param name="filePath"> </param>
         /// <returns> 檔案內容 </returns>
         /// <exception cref="IOException"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public String readFileContent(String filePath) throws java.io.IOException
         public virtual string readFileContent(string filePath)
         {
             StringBuilder sbBuilder = new StringBuilder();

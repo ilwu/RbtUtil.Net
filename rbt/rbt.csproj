@@ -79,6 +79,8 @@
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.108.0\lib\net45\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -160,7 +162,6 @@
     <Compile Include="util\FTPUtil.cs" />
     <Compile Include="util\ImageUtil.cs" />
     <Compile Include="util\NetworkUtil.cs" />
-    <Compile Include="util\StartAppUtil.cs" />
     <Compile Include="util\StringUtil.cs" />
     <Compile Include="util\LocalMachineUtil.cs" />
     <Compile Include="util\WinApi.cs" />
