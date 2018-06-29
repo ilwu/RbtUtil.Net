@@ -21,9 +21,16 @@ namespace rbt.util.db
             return _mySqlUtil ?? (_mySqlUtil = NewSqlUtil());
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T Find<T>() where T : BaseDBEntity, IDBEntity
         {
-            return Activator.CreateInstance<T>();
+            var model = Activator.CreateInstance<T>();
+            model.SetDAO(this);
+            return model;
         }
 
         // ==============================================================================================

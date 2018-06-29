@@ -15,6 +15,21 @@ namespace rbt.util.db.model
         protected EntityOperatingModel operatingModel { get; set; }
 
         /// <summary>
+        ///
+        /// </summary>
+        private IDBUtil _DAO { get; set; }
+
+        public void SetDAO(IDBUtil dao)
+        {
+            _DAO = dao;
+        }
+
+        public IDBUtil GetDAO()
+        {
+            return _DAO;
+        }
+
+        /// <summary>
         /// 記錄異動過的欄位
         /// </summary>
         public HashSet<string> GetModeifyField()

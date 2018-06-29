@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text;
+using rbt.Extension;
+using ZetaLongPaths;
+using Microsoft.Win32.SafeHandles;
+using System.Security.AccessControl;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace rbt.util
 {
@@ -44,17 +50,62 @@ namespace rbt.util
         /// 將內容寫入檔案 </summary>
         /// <param name="fileFullPath"> 完整路徑 + 檔案名稱 </param>
         /// <exception cref="Exception"> </exception>
-        public virtual void writeToFile(string fileFullPath)
+        public virtual void WriteBufferToFile(string fileFullPath)
         {
-            FileStream fos = null;
+            // 檢核路徑
+            var directory = ZlpPathHelper.GetDirectoryPathNameFromFilePath(fileFullPath);
+            DirectoryVerifyExistsAndCreate(directory);
 
-            try
+            using (var fos = new ZlpFileInfo(fileFullPath).OpenCreate())
             {
-                // 檢路徑
-                //(new PathUtil()).chkAndCreateDir((new System.IO.DirectoryInfo(fileFullPath)).Parent.FullName);
+                // 印出訊息
+                Console.WriteLine("寫入 " + fileFullPath);
 
-                // 建立檔案
-                fos = new FileStream(fileFullPath, FileMode.Create);
+                var bb = encoding.GetBytes(this.stringBuffer.ToString());
+
+                if (this.useUTF8BOM)
+                {
+                    // 寫入 UTF8 HEADER
+                    fos.WriteByte(0xEF);
+                    fos.WriteByte(0xBB);
+                    fos.WriteByte(0xBF);
+
+                    // 寫入檔案
+                    fos.Write(bb, 0, bb.Length);
+                }
+                else
+                {
+                    // 寫入檔案
+                    fos.Write(bb, 0, bb.Length);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 將傳入之文字，寫入檔案 (編碼請使用 setEncoding 設定) </summary>
+        /// <param name="content"> </param>
+        /// <param name="path"> </param>
+        /// <param name="fileName"> </param>
+        /// <exception cref="Exception"> </exception>
+        public void WriteToFile(string content, string fileFullPath)
+        {
+            this.WriteToFile(encoding.GetBytes(content), fileFullPath);
+        }
+
+        /// <summary>
+        /// 將傳入之byte[]寫入檔案 (包含建立路徑功能) </summary>
+        /// <param name="data"> data (byte[]) </param>
+        /// <param name="path"> 檔案路徑 </param>
+        /// <param name="fileName"> 檔案名稱 </param>
+        /// <exception cref="Exception"> </exception>
+        public void WriteToFile(byte[] data, string fileFullPath)
+        {
+            // 檢核路徑
+            var directory = ZlpPathHelper.GetDirectoryPathNameFromFilePath(fileFullPath);
+            DirectoryVerifyExistsAndCreate(directory);
+
+            using (var fos = new ZlpFileInfo(fileFullPath).OpenCreate())
+            {
                 // 印出訊息
                 Console.WriteLine("寫入 " + fileFullPath);
 
@@ -69,160 +120,12 @@ namespace rbt.util
                     fos.WriteByte(0xBF);
 
                     // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-                else
-                {
-                    // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                // close
-                if (fos != null)
-                {
-                    try
-                    {
-                        fos.Close();
-                    }
-                    catch (IOException e)
-                    {
-                        Console.WriteLine(e.ToString());
-                        Console.Write(e.StackTrace);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 將內容寫入檔案 (包含建立路徑功能) </summary>
-        /// <param name="path"> 檔案路徑 </param>
-        /// <param name="fileName"> 檔案名稱 </param>
-        /// <exception cref="Exception"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public void writeToFile(String path, String fileName) throws Exception
-        public virtual void writeToFile(string path, string fileName)
-        {
-            FileStream fos = null;
-
-            try
-            {
-                // 檢查並建立路徑
-                this.chkAndCreateDir(path);
-
-                // 建立檔案
-                fos = new FileStream(path + Path.DirectorySeparatorChar + fileName, FileMode.Create);
-
-                var bb = encoding.GetBytes(this.stringBuffer.ToString());
-                if (this.useUTF8BOM)
-                {
-                    // 寫入 UTF8 HEADER
-
-                    fos.WriteByte(0xEF);
-                    fos.WriteByte(0xBB);
-                    fos.WriteByte(0xBF);
-
-                    // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-                else
-                {
-                    // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                // close
-                if (fos != null)
-                {
-                    try
-                    {
-                        fos.Close();
-                        fos.Dispose();
-                    }
-                    catch (IOException e)
-                    {
-                        Console.WriteLine(e.ToString());
-                        Console.Write(e.StackTrace);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 將傳入之文字，寫入檔案 (編碼請使用 setEncoding 設定) </summary>
-        /// <param name="content"> </param>
-        /// <param name="path"> </param>
-        /// <param name="fileName"> </param>
-        /// <exception cref="Exception"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public void writeToFile(String content, String path, String fileName) throws Exception
-        public virtual void writeToFile(string content, string path, string fileName)
-        {
-            this.writeToFile(encoding.GetBytes(content), path, fileName);
-        }
-
-        /// <summary>
-        /// 將傳入之byte[]寫入檔案 (包含建立路徑功能) </summary>
-        /// <param name="data"> data (byte[]) </param>
-        /// <param name="path"> 檔案路徑 </param>
-        /// <param name="fileName"> 檔案名稱 </param>
-        /// <exception cref="Exception"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public void writeToFile(byte[] data, String path, String fileName) throws Exception
-        public virtual void writeToFile(byte[] data, string path, string fileName)
-        {
-            FileStream fos = null;
-
-            try
-            {
-                // 檢查並建立路徑
-                this.chkAndCreateDir(path);
-
-                // 建立檔案
-                fos = new FileStream(path + Path.DirectorySeparatorChar + fileName, FileMode.Create);
-
-                if (this.useUTF8BOM)
-                {
-                    // 寫入 UTF8 HEADER
-
-                    fos.WriteByte(0xEF);
-                    fos.WriteByte(0xBB);
-                    fos.WriteByte(0xBF);
-
-                    // 寫入檔案
                     fos.Write(data, 0, data.Length);
                 }
                 else
                 {
                     // 寫入檔案
                     fos.Write(data, 0, data.Length);
-                }
-            }
-            finally
-            {
-                // close
-                if (fos != null)
-                {
-                    try
-                    {
-                        fos.Close();
-                    }
-                    catch (IOException e)
-                    {
-                        Console.WriteLine(e.ToString());
-                        Console.Write(e.StackTrace);
-                    }
                 }
             }
         }
@@ -269,42 +172,24 @@ namespace rbt.util
         }
 
         // =========================================================================================
-        // 其他工具
+        // 讀取檔案
         // =========================================================================================
-        public void chkAndCreateDir(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-        }
-
-        /// <summary>
-        /// 擷取完整路徑中的檔案名稱 </summary>
-        /// <param name="filePath"> 檔案完整路徑 </param>
-        /// <returns> 檔案名稱 </returns>
-        public virtual string getFileName(string filePath)
-        {
-            return Path.GetFileName(filePath);
-        }
-
         /// <summary>
         /// 讀取檔案 </summary>
         /// <param name="filePath"> </param>
         /// <returns> 檔案內容 </returns>
         /// <exception cref="IOException"> </exception>
-        public virtual string readFileContent(string filePath)
+        public string ReadFileContent(string filePath, Encoding encoding = null)
         {
-            StringBuilder sbBuilder = new StringBuilder();
-            using (System.IO.StreamReader sr = System.IO.File.OpenText(filePath))
+            var fileInfo = new ZlpFileInfo(filePath);
+            if (encoding == null)
             {
-                string s = "";
-                while ((s = sr.ReadLine()) != null)
-                {
-                    sbBuilder.AppendLine(s);
-                }
+                return fileInfo.ReadAllText();
             }
-            return sbBuilder.ToString();
+            else
+            {
+                return fileInfo.ReadAllText(encoding);
+            }
         }
 
         /// <summary>
@@ -313,63 +198,196 @@ namespace rbt.util
         /// <param name="fileEncodeing"> 檔案編碼 </param>
         /// <returns> 依行放入String[] </returns>
         /// <exception cref="IOException"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public String[] readFileContent(String filePath, String fileEncodeing) throws java.io.IOException
-        public virtual string[] readFileContent(string filePath, string fileEncodeing)
+        public string[] ReadFileAllLines(string filePath, Encoding encoding = null)
         {
-            List<string> resultList = new List<string>();
-            using (System.IO.StreamReader sr = System.IO.File.OpenText(filePath))
+            var fileInfo = new ZlpFileInfo(filePath);
+            if (encoding == null)
             {
-                string s = "";
-                while ((s = sr.ReadLine()) != null)
-                {
-                    resultList.Add(s);
-                }
+                return fileInfo.ReadAllLines();
             }
-            return resultList.ToArray();
+            else
+            {
+                return fileInfo.ReadAllLines(encoding);
+            }
         }
 
+        // =========================================================================================
+        // 其他工具
+        // =========================================================================================
         /// <summary>
-        /// 讀取檔案並回傳內容 </summary>
-        /// <param name="filePath"> </param>
-        /// <param name="fileEncodeing">
-        /// @return </param>
-        /// <exception cref="IOException"> </exception>
-        //JAVA TO C# CONVERTER WARNING: Method 'throws' clauses are not available in .NET:
-        //ORIGINAL LINE: public String readFileText(String filePath, String fileEncodeing) throws java.io.IOException
-        public virtual string readFileText(string filePath, string fileEncodeing)
-        {
-            string[] lines = this.readFileContent(filePath, fileEncodeing);
-            StringBuilder sb = new StringBuilder();
-
-            foreach (string str in lines)
-            {
-                sb.Append(str);
-                sb.Append(this.BROKEN_LINE_SYMBOL_Renamed);
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// 檢查是否為合法檔名
+        /// 取得合法檔名
         /// </summary>
-        /// <param name="fullFileName">完整路徑+檔案名稱</param>
+        /// <param name="filename"></param>
         /// <returns></returns>
-        public virtual bool isAllowFullFileName(string fullFileName)
+        public static string MakeFilenameValid(string filename)
         {
+            if (filename == null)
+                throw new ArgumentNullException();
+
+            if (filename.EndsWith("."))
+                filename = Regex.Replace(filename, @"\.+$", "");
+
+            if (filename.Length == 0)
+                throw new ArgumentException();
+
+            if (filename.Length > 245)
+                throw new System.IO.PathTooLongException();
+
+            foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+            {
+                filename = filename.Replace(c, '_');
+            }
+
+            return filename;
+        }
+
+        /// <summary>
+        /// 取得合法路徑名
+        /// </summary>
+        /// <param name="foldername"></param>
+        /// <returns></returns>
+        public static string MakeFoldernameValid(string foldername)
+        {
+            if (foldername == null)
+                throw new ArgumentNullException();
+
+            if (foldername.EndsWith("."))
+                foldername = Regex.Replace(foldername, @"\.+$", "");
+
+            if (foldername.Length == 0)
+                throw new ArgumentException();
+
+            if (foldername.Length > 245)
+                throw new System.IO.PathTooLongException();
+
+            foreach (char c in System.IO.Path.GetInvalidPathChars())
+            {
+                foldername = foldername.Replace(c, '_');
+            }
+
+            return foldername;
+        }
+
+        /// <summary>
+        /// 掃描檔案列表 (含子目錄)
+        /// </summary>
+        /// <param name="targetDirectory">標的目錄</param>
+        /// <param name="extensionFilters">副檔名過濾</param>
+        /// <param name="realtimeActionWhenFind">發現檔案時, 即時執行項目 (避免掃描回傳時間過久, 可以在發現檔案的第一時間執行)</param>
+        /// <returns></returns>
+        public IList<string> ScanDirectoryFile(
+            string targetDirectory,
+            string[] extensionFilters = null,
+            Action<string> realtimeActionWhenFind = null)
+        {
+            //將副檔名都轉小寫, 以免比對錯誤
+            for (int i = 0; extensionFilters != null && i < extensionFilters.Length; i++)
+            {
+                extensionFilters[i] = extensionFilters[i].ToLower();
+            }
+
+            //Scan
+            return RecursiveScan(targetDirectory, extensionFilters, realtimeActionWhenFind);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="targetDirectory">標的目錄</param>
+        /// <param name="extensionFilters">副檔名過濾</param>
+        /// <param name="realtimeActionWhenFind">發現檔案時, 即時執行項目 (避免掃描回傳時間過久, 可以在發現檔案的第一時間執行)</param>
+        /// <returns></returns>
+        private IList<string> RecursiveScan(
+            string targetDirectory,
+            string[] extensionFilters = null,
+            Action<string> realtimeActionWhenFind = null)
+        {
+            IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+            WinApi.WIN32_FIND_DATAW findData;
+            IntPtr findHandle = INVALID_HANDLE_VALUE;
+
+            var info = new List<string>();
             try
             {
-                File.Create(fullFileName);
+                findHandle = WinApi.FindFirstFileW(targetDirectory + @"\*", out findData);
+                if (findHandle != INVALID_HANDLE_VALUE)
+                {
+                    do
+                    {
+                        if (findData.cFileName == "." || findData.cFileName == "..") continue;
+
+                        string fullpath = targetDirectory + (targetDirectory.EndsWith("\\") ? "" : "\\") + findData.cFileName;
+
+                        if ((findData.dwFileAttributes & System.IO.FileAttributes.Directory) != 0)
+                        {
+                            //為目錄時遞迴
+                            info.AddRange(RecursiveScan(fullpath, extensionFilters, realtimeActionWhenFind));
+                        }
+                        else
+                        {
+                            //副檔名過濾 (前一個方法已全部轉小寫, 故此處以小寫比對)
+                            if (extensionFilters != null &&
+                                ZlpPathHelper.GetExtension(fullpath).ToLower().NotIn(extensionFilters))
+                            {
+                                continue;
+                            }
+                            //取得完整路徑 (使用 ZlpPathHelper 避免路徑過長)
+                            var fileFullPath = ZlpPathHelper.GetFullPath(fullpath);
+                            //執行即時Action (exception 外層自己控制)
+                            if (realtimeActionWhenFind != null)
+                            {
+                                realtimeActionWhenFind(fileFullPath);
+                            }
+
+                            info.Add(fileFullPath);
+                        }
+                    }
+                    while (WinApi.FindNextFile(findHandle, out findData));
+                }
             }
-            catch (Exception)
+            finally
             {
-                return false;
+                if (findHandle != INVALID_HANDLE_VALUE) WinApi.FindClose(findHandle);
             }
-            if (File.Exists(fullFileName))
+            return info;
+        }
+
+        /// <summary>
+        /// 檔案是否使用中
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static bool IsFileInUse(string fileName)
+        {
+            bool inUse = false;
+
+            SafeFileHandle fileHandle =
+            WinApi.CreateFile(fileName, FileSystemRights.Modify,
+                  System.IO.FileShare.Write, IntPtr.Zero,
+                  System.IO.FileMode.OpenOrCreate, System.IO.FileOptions.None, IntPtr.Zero);
+
+            if (fileHandle.IsInvalid)
             {
-                File.Delete(fullFileName);
+                //private const int ERROR_SHARING_VIOLATION = 32;
+                if (Marshal.GetLastWin32Error() == 32)
+                {
+                    inUse = true;
+                }
             }
-            return true;
+            fileHandle.Close();
+            return inUse;
+        }
+
+        /// <summary>
+        /// 確認目錄存在, 不存在時新增
+        /// </summary>
+        /// <param name="path"></param>
+        public static void DirectoryVerifyExistsAndCreate(string path)
+        {
+            if (!ZlpIOHelper.DirectoryExists(path))
+            {
+                ZlpIOHelper.CreateDirectory(path);
+            }
         }
     }
 }

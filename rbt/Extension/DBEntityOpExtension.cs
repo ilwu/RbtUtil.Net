@@ -1,6 +1,7 @@
 ﻿using rbt.util;
 using rbt.util.db;
 using rbt.util.db.model;
+using rbt.util.exception;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -10,81 +11,9 @@ namespace rbt.Extension
 {
     public static class DBEntityOpExtension
     {
+        private const string DAO_NOT_FIND = "Model 未放入 DAO, 請由 dbutil.Find<T> 起始本方法";
+
         #region "條件式"
-
-        //====================================================================
-        //條件式
-        //====================================================================
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="exp"></param>
-        /// <param name="OPERATOR"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private static TSource AddWhereOperating<TSource, T>(
-            this TSource model, Expression<Func<TSource, T>> exp, string OPERATOR, T value)
-            where TSource : IDBEntity
-        {
-            OperatingField field = new OperatingField()
-            {
-                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
-                OPERATOR = OPERATOR,
-                VALUE = value
-            };
-
-            model.GetOperating().WHERE_LIST.Add(field);
-
-            return model;
-        }
-
-        /// <summary>
-        /// 等於
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="exp"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static TSource IsEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
-            where TSource : IDBEntity
-        {
-            return AddWhereOperating(model, exp, "=", value);
-        }
-
-        /// <summary>
-        /// 不等於
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="exp"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static TSource IsNotEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
-            where TSource : IDBEntity
-        {
-            return AddWhereOperating(model, exp, "<>", value);
-        }
-
-        /// <summary>
-        /// 大於
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="exp"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static TSource GreaterThen<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
-            where TSource : IDBEntity
-        {
-            return AddWhereOperating(model, exp, ">", value);
-        }
 
         /// <summary>
         /// 大於等於
@@ -102,7 +31,7 @@ namespace rbt.Extension
         }
 
         /// <summary>
-        /// 小於
+        /// 大於
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="T"></typeparam>
@@ -110,25 +39,10 @@ namespace rbt.Extension
         /// <param name="exp"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static TSource LessThen<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
+        public static TSource GreaterThen<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
             where TSource : IDBEntity
         {
-            return AddWhereOperating(model, exp, "<", value);
-        }
-
-        /// <summary>
-        /// 小於等於
-        /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="exp"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static TSource LessEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
-            where TSource : IDBEntity
-        {
-            return AddWhereOperating(model, exp, "<=", value);
+            return AddWhereOperating(model, exp, ">", value);
         }
 
         /// <summary>
@@ -158,47 +72,48 @@ namespace rbt.Extension
         }
 
         /// <summary>
-        /// 欄位值為 NULL
+        /// 等於
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
         /// <param name="exp"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public static TSource IsNull<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp)
+        public static TSource IsEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
             where TSource : IDBEntity
         {
-            OperatingField field = new OperatingField()
-            {
-                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
-                OPERATOR = "IS",
-                VALUE = "NULL"
-            };
-
-            model.GetOperating().WHERE_LIST.Add(field);
-
-            return model;
+            return AddWhereOperating(model, exp, "=", value);
         }
 
         /// <summary>
-        /// 欄位值不為 NULL
+        /// SQL查詢語句中 'IN (...)'查詢條件。
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
         /// <param name="exp"></param>
+        /// <param name="paramaters"></param>
         /// <returns></returns>
-        public static TSource IsNotNull<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp)
-            where TSource : IDBEntity
+        public static TSource IsInRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, string[] paramaters) where TSource : IDBEntity
         {
-            model.GetOperating().WHERE_LIST.Add(new OperatingField()
-            {
-                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
-                OPERATOR = "IS",
-                VALUE = "NOT NULL"
-            });
+            return model.InRAW(exp, paramaters, "IN");
+        }
 
-            return model;
+        /// <summary>
+        /// SQL查詢語句中 'IN (...)'查詢條件。
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="paramaters"></param>
+        /// <returns></returns>
+        public static TSource IsInRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, IList<string> paramaterList) where TSource : IDBEntity
+        {
+            string[] paramaters = null;
+            if (paramaterList != null) paramaters = ((List<string>)paramaterList).ToArray();
+            return model.InRAW(exp, paramaters, "IN");
         }
 
         /// <summary>
@@ -223,24 +138,122 @@ namespace rbt.Extension
         }
 
         /// <summary>
-        /// SQL查詢語句中 'IN (...)'查詢條件。
+        /// 不等於
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
         /// <param name="exp"></param>
-        /// <param name="list"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public static TSource IsInRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, IList<string> list) where TSource : IDBEntity
+        public static TSource IsNotEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
+            where TSource : IDBEntity
+        {
+            return AddWhereOperating(model, exp, "<>", value);
+        }
+
+        /// <summary>
+        /// SQL查詢語句中 'NOT IN (...)'查詢條件。
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="paramaters"></param>
+        /// <returns></returns>
+        public static TSource IsNotInRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, string[] paramaters) where TSource : IDBEntity
+        {
+            return model.InRAW(exp, paramaters, "NOT IN");
+        }
+
+        /// <summary>
+        /// SQL查詢語句中 'NOT IN (...)'查詢條件。
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="paramaters"></param>
+        /// <returns></returns>
+        public static TSource IsNotInRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, IList<string> paramaterList) where TSource : IDBEntity
+        {
+            string[] paramaters = null;
+            if (paramaterList != null) paramaters = ((List<string>)paramaterList).ToArray();
+            return model.InRAW(exp, paramaters, "NOT IN");
+        }
+
+        /// <summary>
+        /// 欄位值不為 NULL
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <returns></returns>
+        public static TSource IsNotNull<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp)
+            where TSource : IDBEntity
         {
             model.GetOperating().WHERE_LIST.Add(new OperatingField()
             {
                 COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
-                OPERATOR = "IN",
-                VALUE = "(" + BaseSqlUtil.GenInSql((List<string>)list) + ")"
+                OPERATOR = "IS",
+                VALUE = "NOT NULL"
             });
 
             return model;
+        }
+
+        /// <summary>
+        /// 欄位值為 NULL
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <returns></returns>
+        public static TSource IsNull<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp)
+            where TSource : IDBEntity
+        {
+            OperatingField field = new OperatingField()
+            {
+                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
+                OPERATOR = "IS",
+                VALUE = "NULL"
+            };
+
+            model.GetOperating().WHERE_LIST.Add(field);
+
+            return model;
+        }
+
+        /// <summary>
+        /// 小於等於
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static TSource LessEqual<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
+            where TSource : IDBEntity
+        {
+            return AddWhereOperating(model, exp, "<=", value);
+        }
+
+        /// <summary>
+        /// 小於
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static TSource LessThen<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, T value)
+            where TSource : IDBEntity
+        {
+            return AddWhereOperating(model, exp, "<", value);
         }
 
         /// <summary>
@@ -283,19 +296,189 @@ namespace rbt.Extension
             return model;
         }
 
+        //====================================================================
+        //條件式
+        //====================================================================
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="OPERATOR"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static TSource AddWhereOperating<TSource, T>(
+            this TSource model, Expression<Func<TSource, T>> exp, string OPERATOR, T value)
+            where TSource : IDBEntity
+        {
+            OperatingField field = new OperatingField()
+            {
+                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
+                OPERATOR = OPERATOR,
+                VALUE = value
+            };
+
+            model.GetOperating().WHERE_LIST.Add(field);
+
+            return model;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="paramaters"></param>
+        /// <param name="OPERATOR"></param>
+        /// <returns></returns>
+        private static TSource InRAW<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp, string[] paramaters, string OPERATOR) where TSource : IDBEntity
+        {
+            model.GetOperating().WHERE_LIST.Add(new OperatingField()
+            {
+                COLUMN_NAME = ((MemberExpression)exp.Body).Member.Name,
+                OPERATOR = OPERATOR,
+                VALUE = "(" + BaseSqlUtil.GenInSql(paramaters) + ")"
+            });
+
+            return model;
+        }
+
         #endregion "條件式"
 
         #region "查詢"
+
+        /// <summary>
+        /// 回傳依條件判斷是否存在筆數
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static bool IsExist<T>(this T model,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.IsExist(model.GetDAO(), conn, trns);
+        }
+
+        /// <summary>
+        /// 回傳依條件判斷是否存在筆數
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="dao"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static bool IsExist<T>(this T model, IDBUtil dao,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            //處理 where 參數
+            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
+            //查詢
+            return dao.IsExistByTable(model.GetTableName(), whereParams, conn, trns);
+        }
+
+        /// <summary>
+        /// 取得筆數
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static int QueryCount<T>(this T model,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.QueryCount(model.GetDAO(), conn, trns);
+        }
+
+        /// <summary>
+        /// 取得筆數
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="dao"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static int QueryCount<T>(this T model, IDBUtil dao,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            //處理 where 參數
+            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
+            //查詢
+            return dao.QueryCount(model.GetTableName(), whereParams, conn, trns);
+        }
+
+        /// <summary>
+        /// 取回第一筆 (查不到時, 回傳 null)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static T QueryFirst<T>(this T model,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.QueryFirst(model.GetDAO(), conn, trns);
+        }
+
+        /// <summary>
+        /// 取回第一筆 (查不到時, 回傳 null)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="dao"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static T QueryFirst<T>(this T model, IDBUtil dao,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            //處理 where 參數
+            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
+
+            //處理 order by 參數
+            string[] orderByFileds = prepareOrderBy(model.GetOperating().ORDER_LIST);
+
+            //查詢
+            return dao.QueryByTableAndOrderBy<T>(
+                model.GetTableName(), whereParams, orderByFileds, conn, trns).SafeFirst();
+        }
 
         //====================================================================
         //查詢
         //====================================================================
         /// <summary>
-        ///
+        /// 查詢 - 多筆
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static IList<T> QueryList<T>(this T model,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.QueryList(model.GetDAO(), conn, trns);
+        }
+
+        /// <summary>
+        /// 查詢 - 多筆
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
         /// <param name="dao"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
         /// <returns></returns>
         public static IList<T> QueryList<T>(this T model, IDBUtil dao,
             DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
@@ -312,40 +495,20 @@ namespace rbt.Extension
         }
 
         /// <summary>
-        /// 取回第一筆 (查不到時, 回傳 null)
+        /// 查詢欄位最大值
         /// </summary>
+        /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
-        /// <param name="dao"></param>
+        /// <param name="exp"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
         /// <returns></returns>
-        public static T QueryFirst<T>(this T model, IDBUtil dao,
-            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        public static T QueryMax<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp,
+            DbConnection conn = null, DbTransaction trns = null) where TSource : IDBEntity
         {
-            //處理 where 參數
-            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
-
-            //處理 order by 參數
-            string[] orderByFileds = prepareOrderBy(model.GetOperating().ORDER_LIST);
-
-            //查詢
-            return dao.QueryByTableAndOrderBy<T>(
-                model.GetTableName(), whereParams, orderByFileds, conn, trns).SafeFirst();
-        }
-
-        /// <summary>
-        /// 取得筆數
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public static int QueryCount<T>(this T model, IDBUtil dao,
-            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
-        {
-            //處理 where 參數
-            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
-            //查詢
-            return dao.QueryCount(model.GetTableName(), whereParams, conn, trns);
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.QueryMax(exp, model.GetDAO(), conn, trns);
         }
 
         /// <summary>
@@ -363,6 +526,23 @@ namespace rbt.Extension
             DbConnection conn = null, DbTransaction trns = null) where TSource : IDBEntity
         {
             return QueryAggregate(model, exp, "MAX", dao, conn, trns);
+        }
+
+        /// <summary>
+        /// 查詢欄位最小值
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="exp"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static T QueryMin<TSource, T>(this TSource model, Expression<Func<TSource, T>> exp,
+            DbConnection conn = null, DbTransaction trns = null) where TSource : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.QueryMin(exp, model.GetDAO(), conn, trns);
         }
 
         /// <summary>
@@ -421,22 +601,6 @@ namespace rbt.Extension
             return default(T);
         }
 
-        /// <summary>
-        /// 回傳依條件判斷是否存在筆數
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="model"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public static bool IsExist<T>(this T model, IDBUtil dao,
-            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
-        {
-            //處理 where 參數
-            var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
-            //查詢
-            return dao.IsExist(model.GetTableName(), whereParams, conn, trns);
-        }
-
         #endregion "查詢"
 
         #region "新增 INSERT"
@@ -469,38 +633,22 @@ namespace rbt.Extension
         //修改 UPDATE
         //====================================================================
         /// <summary>
-        /// 修改 UPDATE
+        ///
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
+        /// <param name="updateModel"></param>
         /// <param name="dao"></param>
         /// <param name="conn"></param>
         /// <param name="trns"></param>
-        /// <returns>異動筆數</returns>
-        //public static int Update<T>(this T model, IDBUtil dao,
-        //    DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
-        //{
-        //    //處理 where 參數
-        //    var whereParams = prepareWhereParams(model.GetOperating().WHERE_LIST);
-
-        //    //處理 set 參數 (僅抓 model 中有異動到的參數)
-        //    var setColumnsInfo = new Dictionary<string, object>();
-
-        //    foreach (var pi in model.GetType().GetProperties())
-        //    {
-        //        //var pName = "";
-        //        ////忽略 db 欄位大小寫和 model 的不同
-        //        //if (dic.ContainsKey(p.Name.ToUpper())) pName = p.Name.ToUpper();
-        //        //if (dic.ContainsKey(p.Name.ToLower())) pName = p.Name.ToLower();
-
-        //        if (model.GetModeifyField().Contains(pi.Name))
-        //        {
-        //            setColumnsInfo.Add(pi.Name, pi.GetValue(model));
-        //        }
-        //    }
-
-        //    return dao.Update(model.GetTableName(), setColumnsInfo, whereParams, conn, trns);
-        //}
+        /// <returns></returns>
+        public static int Update<T>(this T model,
+            T updateModel,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.Update(model.GetDAO(), updateModel, conn, trns);
+        }
 
         /// <summary>
         ///
@@ -546,6 +694,21 @@ namespace rbt.Extension
         //====================================================================
         //刪除 DELETE
         //====================================================================
+        /// <summary>
+        /// 刪除 (條件式結束語句)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="conn"></param>
+        /// <param name="trns"></param>
+        /// <returns></returns>
+        public static int Delete<T>(this T model,
+            DbConnection conn = null, DbTransaction trns = null) where T : IDBEntity
+        {
+            if (model.GetDAO() == null) throw new DBEntityOpException(DAO_NOT_FIND);
+            return model.Delete(model.GetDAO(), conn, trns);
+        }
+
         /// <summary>
         /// 刪除 (條件式結束語句)
         /// </summary>
@@ -617,6 +780,10 @@ namespace rbt.Extension
 
                     case "IN":
                         whereParams.Add("!@#" + field.COLUMN_NAME + " IN ", field.VALUE);
+                        break;
+
+                    case "NOT IN":
+                        whereParams.Add("!@#" + field.COLUMN_NAME + " NOT IN ", field.VALUE);
                         break;
 
                     case "IS":

@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using rbt.Extension;
 
 namespace rbt.util
 {
@@ -17,21 +18,58 @@ namespace rbt.util
     {
         private readonly static ILog LOG = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        public static string GetExecutablePathByID(int processID)
+        {
+            ObjectQuery sq = new ObjectQuery
+                ("Select * from Win32_Process Where ProcessID = '" + processID + "'");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(sq);
+
+            foreach (System.Management.ManagementObject p in searcher.Get())
+            {
+                return p["ExecutablePath"].SafeTrim();
+            }
+            return "";
+        }
+
         /// <summary>
         /// 於 windows service 中, 無法透由正規方法取到目前登入 user ID 時, 利用此方法為替代方案
         /// </summary>
         /// <returns></returns>
         public static string GetCurrentUserIDInService()
         {
-            int PID = Process.GetProcessesByName("explorer")[0].Id;
+            return GetFirstProcessOwner("explorer");
+        }
+
+        /// <summary>
+        /// 取得處理程序的使用者名稱
+        /// </summary>
+        /// <returns></returns>
+        private static string GetFirstProcessOwner(string processName)
+        {
+            //避免未登入狀態錯誤
+            var ps = Process.GetProcessesByName(processName);
+            if (ps == null || ps.Length == 0) return "";
+
+            return GetProcessOwnerByID(ps[0].Id, processName);
+        }
+
+        /// <summary>
+        /// 以PID 取得 處理程序的使用者名稱
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string GetProcessOwnerByID(int id, string executableFileName)
+        {
             ObjectQuery sq = new ObjectQuery
-                ("Select * from Win32_Process Where ProcessID = '" + PID + "'");
+                ("Select * from Win32_Process Where ProcessID = '" + id + "'");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(sq);
 
             foreach (System.Management.ManagementObject p in searcher.Get())
             {
-                if (p["ExecutablePath"] != null &&
-                    System.IO.Path.GetFileName(p["ExecutablePath"].ToString()).ToLower() == "explorer.exe")
+                var ExecutablePath = p["ExecutablePath"].SafeTrim();
+
+                if (ExecutablePath.NotEmpty() &&
+                    System.IO.Path.GetFileNameWithoutExtension(ExecutablePath).ToLower() == executableFileName.ToLower())
                 {
                     string[] OwnerInfo = new string[2];
                     p.InvokeMethod("GetOwner", (object[])OwnerInfo);
@@ -436,6 +474,36 @@ namespace rbt.util
                 WinApi.CloseHandle(hDupedToken);
 
             return resultMessage;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsLogin()
+        {
+            var hUserToken = IntPtr.Zero;
+            var startInfo = new ProcessExtensions.STARTUPINFO();
+            var procInfo = new ProcessExtensions.PROCESS_INFORMATION();
+            var pEnv = IntPtr.Zero;
+
+            startInfo.cb = Marshal.SizeOf(typeof(ProcessExtensions.STARTUPINFO));
+
+            try
+            {
+                int errorCode = 0;
+                return ProcessExtensions.GetSessionUserToken(ref hUserToken, ref errorCode);
+            }
+            finally
+            {
+                ProcessExtensions.CloseHandle(hUserToken);
+                if (pEnv != IntPtr.Zero)
+                {
+                    ProcessExtensions.DestroyEnvironmentBlock(pEnv);
+                }
+                ProcessExtensions.CloseHandle(procInfo.hThread);
+                ProcessExtensions.CloseHandle(procInfo.hProcess);
+            }
         }
 
         /// <summary>

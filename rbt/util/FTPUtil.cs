@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using ZetaLongPaths;
 
 namespace rbt.util
 {
@@ -95,11 +96,11 @@ namespace rbt.util
             ftpRequest.UseBinary = true;
             ftpRequest.Method = WebRequestMethods.Ftp.DownloadFile;
 
-            using (FtpWebResponse response = (FtpWebResponse)ftpRequest.GetResponse())
+            using (var response = (FtpWebResponse)ftpRequest.GetResponse())
             {
-                using (Stream readerStream = response.GetResponseStream())
+                using (var readerStream = response.GetResponseStream())
                 {
-                    using (Stream fileStream = File.Create(targetFileFullPath))
+                    using (var fileStream = new ZlpFileInfo(targetFileFullPath).OpenCreate())
                     {
                         byte[] buffer = new byte[10240];
                         int read;
@@ -149,7 +150,7 @@ namespace rbt.util
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw new Exception("檔案下載失敗:" + response.StatusDescription);
                 }
@@ -165,21 +166,20 @@ namespace rbt.util
         ///     ''' <returns></returns>
         ///     ''' <remarks></remarks>
         public void UploadFile(
-            ref Stream fileStream,
-            string path,
+            Stream fileStream,
             string fileName
             )
         {
             // =============================================================
             // 檢查並產生目錄
             // =============================================================
-            CheckAndCreateDir(path);
+            //CheckAndCreateDir(config.HostPath);
 
             // =============================================================
             // ftpRequest
             // =============================================================
             //FtpWebRequest ftpRequest = (FtpWebRequest)FtpWebRequest.Create(new Uri(path + "/" + fileName));
-            var ftpRequest = GetFtpWebRequest(path + "/" + fileName);
+            var ftpRequest = GetFtpWebRequest(fileName);
             ftpRequest.Credentials = new NetworkCredential(this.config.UserID, this.config.Password);
             ftpRequest.KeepAlive = false;
             ftpRequest.UseBinary = true;
@@ -325,7 +325,7 @@ namespace rbt.util
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

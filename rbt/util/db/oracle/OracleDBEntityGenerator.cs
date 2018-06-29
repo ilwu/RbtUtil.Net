@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ZetaLongPaths;
 
 namespace rbt.util.db.oracle
 {
@@ -363,10 +364,10 @@ namespace rbt.util.db.oracle
                 validatorContent.AppendLine("");
 
                 //輸出 TbModel
-                fileUtil.writeToFile(tbModelContent.ToString(), OUTPUT_PTAH + "/Models/Entities/", className + ".cs");
+                fileUtil.WriteToFile(tbModelContent.ToString(), OUTPUT_PTAH + "/Models/Entities/" + className + ".cs");
 
                 //輸出 Validator
-                fileUtil.writeToFile(validatorContent.ToString(), OUTPUT_PTAH + "/Models/Entities/validator/", className + "Validator.cs");
+                fileUtil.WriteToFile(validatorContent.ToString(), OUTPUT_PTAH + "/Models/Entities/validator/" + className + "Validator.cs");
 
                 //Console.WriteLine(OUTPUT_PTAH + "/" + className + ".cs");
 
@@ -374,6 +375,13 @@ namespace rbt.util.db.oracle
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dataType"></param>
+        /// <param name="charLength"></param>
+        /// <param name="comments"></param>
+        /// <returns></returns>
         private string GetLengthAttr(string dataType, string charLength, string comments)
         {
             if ("CHAR".Equals(dataType) ||
@@ -397,7 +405,7 @@ namespace rbt.util.db.oracle
                 return "        [NumberValidtion("
                     + StringUtil.SafeTrim(dataPrecision, "0") + ", "
                     + StringUtil.SafeTrim(dataScale, "0") +
-                    ")]\r\n"; ;
+                    ")]\r\n";
             }
             return "";
         }

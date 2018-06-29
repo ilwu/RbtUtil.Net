@@ -63,6 +63,18 @@ namespace rbt.util.db
             DbTransaction transaction = null);
 
         /// <summary>
+        ///     依據傳入的 tableName 查詢筆數是否大於0
+        /// </summary>
+        /// <param name="querySql"></param>
+        /// <param name="params"></param>
+        /// <param name="conn"></param>
+        /// <param name="transaction"></param>
+        /// <returns></returns>
+        /// <remarks></remarks>
+        bool IsExistByTable(string tableName, Dictionary<string, object> whereColumnsInfo = null,
+            DbConnection conn = null, DbTransaction transaction = null);
+
+        /// <summary>
         ///     依據傳入的SQL查詢結果，回傳查詢筆數
         /// </summary>
         /// <param name="querySql">查詢字串</param>
@@ -72,6 +84,7 @@ namespace rbt.util.db
         /// <returns></returns>
         /// <remarks></remarks>
         int QueryCount(
+
             string querySql,
             Dictionary<string, object> @params = null,
             DbConnection conn = null,

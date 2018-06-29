@@ -50,5 +50,25 @@ namespace rbt.util.db.sql
         {
             return new SqlCommand(commandText, (SqlConnection)connection);
         }
+
+        /// <summary>
+        /// 網路連線測試, 會測試連線 DB線路是否正常
+        /// </summary>
+        /// <returns></returns>
+        public bool NetworkTest(int timeout = 200)
+        {
+            try
+            {
+                //取得 DB 連線字串
+                var builder = (SqlConnectionStringBuilder)this.GetConnectionStringBuilder();
+                //測試連線
+                return new NetworkUtil().IsActivityByPing(builder["Data Source"]+"", timeout);
+            }
+            catch (System.Exception)
+            {
+            }
+
+            return false;
+        }
     }
 }

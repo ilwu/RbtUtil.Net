@@ -17,6 +17,10 @@ namespace rbt.util.db.model
         /// </summary>
         EntityOperatingModel GetOperating();
 
+        void SetDAO(IDBUtil dao);
+
+        IDBUtil GetDAO();
+
         /// <summary>
         /// 取得 Table 名稱 (回傳 Entity Model 對應的 TableName)
         /// </summary>

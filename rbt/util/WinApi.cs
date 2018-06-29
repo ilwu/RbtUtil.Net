@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 
 namespace rbt.util
 {
@@ -272,5 +275,42 @@ namespace rbt.util
             int Timeout,
             out int pResponse,
             bool bWait);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr FindFirstFileW(string lpFileName, out WIN32_FIND_DATAW lpFindFileData);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATAW lpFindFileData);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool FindClose(IntPtr hFindFile);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct WIN32_FIND_DATAW
+        {
+            public System.IO.FileAttributes dwFileAttributes;
+            internal System.Runtime.InteropServices.ComTypes.FILETIME ftCreationTime;
+            internal System.Runtime.InteropServices.ComTypes.FILETIME ftLastAccessTime;
+            internal System.Runtime.InteropServices.ComTypes.FILETIME ftLastWriteTime;
+            public int nFileSizeHigh;
+            public int nFileSizeLow;
+            public int dwReserved0;
+            public int dwReserved1;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string cFileName;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)]
+            public string cAlternateFileName;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern SafeFileHandle CreateFile(string lpFileName,
+                                                        FileSystemRights dwDesiredAccess,
+                                                        FileShare dwShareMode,
+                                                        IntPtr securityAttrs,
+                                                        FileMode dwCreationDisposition,
+                                                        FileOptions dwFlagsAndAttributes,
+                                                        IntPtr hTemplateFile);
     }
 }

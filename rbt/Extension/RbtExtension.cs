@@ -243,6 +243,17 @@ namespace rbt.Extension
         }
 
         /// <summary>
+        /// 擴充方法 : 比對是否不等於傳入值任何之一
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="compareStrAry"></param>
+        /// <returns></returns>
+        public static bool NotIn<T>(this T str, params T[] compareStrAry)
+        {
+            return !str.In(compareStrAry);
+        }
+
+        /// <summary>
         /// 物件擴充方法 : 判斷為空
         /// </summary>
         /// <param name="str"></param>
@@ -337,16 +348,26 @@ namespace rbt.Extension
         }
 
         /// <summary>
-        ///
+        /// Exception 擴充方法：組錯誤輸出訊息
         /// </summary>
-        /// <param name="ex"></param>
-        /// <param name="prefixMessage"></param>
+        /// <param name="ex">Exception</param>
+        /// <param name="prefixMessage">錯誤說明</param>
+        /// <param name="maxLength">輸出長度限制</param>
         /// <returns></returns>
-        public static string ToWellMessage(this Exception ex, string prefixMessage)
+        public static string ToWellMessage(this Exception ex, string prefixMessage, int maxLength = -1)
         {
-            return System.Environment.NewLine + prefixMessage +
+            //組錯誤訊息
+            var message = System.Environment.NewLine + prefixMessage +
                    (prefixMessage.NotEmpty() ? ":" : "") + ex.Message + System.Environment.NewLine +
                    ex.StackTrace;
+
+            //長度限制
+            if (maxLength != -1 && message.Length > maxLength)
+            {
+                message = message.Substring(0, maxLength - 1);
+            }
+
+            return message;
         }
     }
 }

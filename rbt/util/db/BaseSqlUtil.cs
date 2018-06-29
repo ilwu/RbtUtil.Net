@@ -545,21 +545,29 @@ namespace rbt.util.db
             return GenInSql(str.Split(spliteStr));
         }
 
-        /// <param name="params">
-        /// @return </param>
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="paramList"></param>
+        /// <returns></returns>
         public static string GenInSql(IList<string> paramList)
         {
             return GenInSql(((List<string>)paramList).ToArray());
         }
 
-        public static string GenInSql(string[] @params)
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="paramaters"></param>
+        /// <returns></returns>
+        public static string GenInSql(string[] paramaters)
         {
-            if (@params == null || @params.Length == 0)
+            if (paramaters == null || paramaters.Length == 0)
             {
                 return "";
             }
             string result = "";
-            foreach (var param in @params)
+            foreach (var param in paramaters)
             {
                 if (param.Length > 0)
                 {
