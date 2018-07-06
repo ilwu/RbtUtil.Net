@@ -1,9 +1,6 @@
-/.vs
 /packages
-/rbt/bin
-/rbt/obj
-/rbt/rbt.csproj.user
-/rbt.Excel.Test/bin
-/rbt.Excel.Test/obj
-/rbt.DB.Test/bin
-/rbt.DB.Test/obj
+bin
+obj
+*.user
+*.suo
+.vs

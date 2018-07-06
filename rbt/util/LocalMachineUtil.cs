@@ -1,4 +1,5 @@
 ﻿using log4net;
+using rbt.Extension;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using rbt.Extension;
 
 namespace rbt.util
 {
@@ -18,6 +18,11 @@ namespace rbt.util
     {
         private readonly static ILog LOG = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="processID"></param>
+        /// <returns></returns>
         public static string GetExecutablePathByID(int processID)
         {
             ObjectQuery sq = new ObjectQuery
@@ -33,24 +38,37 @@ namespace rbt.util
 
         /// <summary>
         /// 於 windows service 中, 無法透由正規方法取到目前登入 user ID 時, 利用此方法為替代方案
+        /// 20180706 因多使用者同時登入 (切換使用者, 未登出)時, 會產生多個 explorer, 造成誤判, 故停用
         /// </summary>
         /// <returns></returns>
-        public static string GetCurrentUserIDInService()
-        {
-            return GetFirstProcessOwner("explorer");
-        }
+        //public static string GetCurrentUserIDInService()
+        //{
+        //    return GetProcessOwner("explorer");
+        //}
 
         /// <summary>
         /// 取得處理程序的使用者名稱
+        /// 1.未找到時回傳 null
         /// </summary>
         /// <returns></returns>
-        private static string GetFirstProcessOwner(string processName)
+        public static IList<string> GetProcessOwnerByProcessName(string processName)
         {
-            //避免未登入狀態錯誤
-            var ps = Process.GetProcessesByName(processName);
-            if (ps == null || ps.Length == 0) return "";
+            //GetProcessesByName
+            var psList = Process.GetProcessesByName(processName);
+            //未找到時回傳 空字串
+            if (psList == null || psList.Length == 0) return null;
+            //取得 owner
+            var ownerList = new List<string>();
+            foreach (var proc in psList)
+            {
+                var owner = GetProcessOwnerByID(proc.Id, processName);
+                if (!ownerList.Contains(owner))
+                {
+                    ownerList.Add(owner);
+                }
+            }
 
-            return GetProcessOwnerByID(ps[0].Id, processName);
+            return ownerList;
         }
 
         /// <summary>

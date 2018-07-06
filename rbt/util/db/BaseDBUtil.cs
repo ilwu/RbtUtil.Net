@@ -1,5 +1,4 @@
-﻿using Oracle.ManagedDataAccess.Client;
-using rbt.util.db.model;
+﻿using rbt.util.db.model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -468,13 +467,18 @@ namespace rbt.util.db
                     }
                 }
 
-                var errorMessage =
-                    "DBUtil Query Error!" + System.Environment.NewLine +
-                    "Exception Type:[" + ex.GetType() + "]" + System.Environment.NewLine +
-                    "Exception Message:[" + ex.Message + "]" + System.Environment.NewLine +
-                    "SQL:[" + System.Environment.NewLine + querySql + System.Environment.NewLine + "]" + System.Environment.NewLine +
-                    sParaValue + System.Environment.NewLine +
-                    ex.StackTrace;
+                var errorMessage = "";
+                errorMessage += "DBUtil Query Error!" + System.Environment.NewLine;
+                errorMessage += "Exception Type:[" + ex.GetType() + "]" + System.Environment.NewLine;
+                errorMessage += "Exception Message:[" + ex.Message + "]" + System.Environment.NewLine;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += "InnerException Type:[" + ex.InnerException.GetType() + "]" + System.Environment.NewLine;
+                    errorMessage += "InnerException Message:[" + ex.InnerException.Message + "]" + System.Environment.NewLine;
+                }
+                errorMessage += "SQL:[" + System.Environment.NewLine + querySql + System.Environment.NewLine + "]" + System.Environment.NewLine;
+                errorMessage += "Params:[" + System.Environment.NewLine + sParaValue + System.Environment.NewLine;
+                errorMessage += ex.StackTrace;
 
                 throw new Exception(errorMessage, ex);
             }
@@ -601,7 +605,7 @@ namespace rbt.util.db
             //參數存放區
             IList<IDataParameter> paramsList = null;
 
-            var isOracle = this.GetConnection().GetType() == typeof(OracleConnection);
+            //var isOracle = this.GetConnection().GetType() == typeof(OracleConnection);
 
             // 產生INSERT SQL
             var insertStr = SqlUtil().genInsertSQL<TModel>(model, ref paramsList);

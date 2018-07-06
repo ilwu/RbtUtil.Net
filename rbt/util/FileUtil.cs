@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.Win32.SafeHandles;
 using rbt.Extension;
-using ZetaLongPaths;
-using Microsoft.Win32.SafeHandles;
-using System.Security.AccessControl;
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Text;
 using System.Text.RegularExpressions;
+using ZetaLongPaths;
 
 namespace rbt.util
 {
@@ -388,6 +387,20 @@ namespace rbt.util
             {
                 ZlpIOHelper.CreateDirectory(path);
             }
+        }
+
+        /// <summary>
+        /// 強制刪除檔案 (排除因檔案唯讀刪除失敗問題)
+        /// </summary>
+        /// <param name="path"></param>
+        public static void FileForceDelete(string path)
+        {
+            if (ZlpIOHelper.FileExists(path))
+            {
+                var fileinfo = new ZlpFileInfo(path);
+                fileinfo.Attributes = ZetaLongPaths.Native.FileAttributes.Normal;
+                fileinfo.Delete();
+            };
         }
     }
 }

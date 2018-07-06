@@ -78,11 +78,11 @@ namespace rbt.util.db
         /// @author Allen
         ///
         /// </summary>
-        protected class ProcResult
+        public class ProcResult
         {
-            internal readonly Dictionary<string, IList<IDictionary<string, object>>> ColumnInfoListByTableName;
-            internal readonly Dictionary<string, IDictionary<string, IDictionary<string, object>>> ColumnInfoByColNameTableName;
-            internal readonly Dictionary<string, IList<string>> ColumnNameSetByTableName;
+            public readonly Dictionary<string, IList<IDictionary<string, object>>> ColumnInfoListByTableName;
+            public readonly Dictionary<string, IDictionary<string, IDictionary<string, object>>> ColumnInfoByColNameTableName;
+            public readonly Dictionary<string, IList<string>> ColumnNameSetByTableName;
 
             public ProcResult(
                 Dictionary<string, IList<IDictionary<string, object>>> columnInfoListByTableName,

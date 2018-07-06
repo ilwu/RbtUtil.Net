@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EC2A67B2-CD5E-4DA7-91C6-1DC4651ABD73}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>rbt.Excel.Test</RootNamespace>
-    <AssemblyName>rbt.Excel.Test</AssemblyName>
+    <ProjectGuid>{B5DBCD16-32E2-489B-9DE7-A4A41FEC1945}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>rbt.util.excel</RootNamespace>
+    <AssemblyName>rbt.util.excel</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -20,90 +21,85 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CSharpJExcel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="CSharpJExcel">
       <HintPath>..\lib\CSharpJExcel.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="NPOI, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.dll</HintPath>
+      <HintPath>..\packages\NPOI.2.3.0\lib\net20\NPOI.dll</HintPath>
     </Reference>
     <Reference Include="NPOI.OOXML, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OOXML.dll</HintPath>
+      <HintPath>..\packages\NPOI.2.3.0\lib\net20\NPOI.OOXML.dll</HintPath>
     </Reference>
     <Reference Include="NPOI.OpenXml4Net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
+      <HintPath>..\packages\NPOI.2.3.0\lib\net20\NPOI.OpenXml4Net.dll</HintPath>
     </Reference>
     <Reference Include="NPOI.OpenXmlFormats, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
+      <HintPath>..\packages\NPOI.2.3.0\lib\net20\NPOI.OpenXmlFormats.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
+    <Compile Include="AbstractExcelOperater.cs" />
+    <Compile Include="bean\common\AbstractConfigInfo.cs" />
+    <Compile Include="bean\common\FunctionInfo.cs" />
+    <Compile Include="bean\expt\ColumnDataSet.cs" />
+    <Compile Include="bean\expt\config\AbstractExportColumnArrtInfo.cs" />
+    <Compile Include="bean\expt\config\AbstractStyleInfo.cs" />
+    <Compile Include="bean\expt\config\ColumnDetailInfo.cs" />
+    <Compile Include="bean\expt\config\ColumnInfo.cs" />
+    <Compile Include="bean\expt\config\ContextInfo.cs" />
+    <Compile Include="bean\expt\config\DetailInfo.cs" />
+    <Compile Include="bean\expt\config\ExportConfigInfo.cs" />
+    <Compile Include="bean\expt\config\SheetlInfo.cs" />
+    <Compile Include="bean\expt\config\StyleInfo.cs" />
+    <Compile Include="bean\expt\config\TdInfo.cs" />
+    <Compile Include="bean\expt\config\TrInfo.cs" />
+    <Compile Include="bean\expt\ExportDataSet.cs" />
+    <Compile Include="bean\impt\config\AbstractImportCommonAttrInfo.cs" />
+    <Compile Include="bean\impt\config\ColumnInfo.cs" />
+    <Compile Include="bean\impt\config\FormatInfo.cs" />
+    <Compile Include="bean\impt\config\ImportConfigInfo.cs" />
+    <Compile Include="bean\impt\config\ParamInfo.cs" />
+    <Compile Include="config\BaseConfigReader.cs" />
+    <Compile Include="config\ExportConfigReader.cs" />
+    <Compile Include="config\ImportConfigReader.cs" />
+    <Compile Include="Constant.cs" />
+    <Compile Include="ExcelExporter.cs" />
+    <Compile Include="ExcelImporter.cs" />
+    <Compile Include="exception\ExcelOperateException.cs" />
+    <Compile Include="function\AbstractExcelOperateFunction.cs" />
+    <Compile Include="function\ExcelOperateFunctionImpl.cs" />
+    <Compile Include="InterfaceExcelOperater.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <Compile Include="util\ExcelStringUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <Folder Include="bin\Debug\" />
+    <Folder Include="bin\Release\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\rbt.util.excel\rbt.util.excel.csproj">
-      <Project>{b5dbcd16-32e2-489b-9de7-a4a41fec1945}</Project>
-      <Name>rbt.util.excel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\rbt\rbt.csproj">
-      <Project>{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}</Project>
+      <Project>{3c9a16f9-3e6a-44e9-93fb-0bc9513d0005}</Project>
       <Name>rbt</Name>
     </ProjectReference>
   </ItemGroup>

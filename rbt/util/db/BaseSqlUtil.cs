@@ -26,15 +26,30 @@ namespace rbt.util.db
             SQLITE
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         protected DB_TYPE dbType;
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dbType"></param>
         public BaseSqlUtil(DB_TYPE dbType)
         {
             this.dbType = dbType;
         }
 
         /// <summary>
-        /// 需實做的實例化 DbParameter 方法
+        /// 需實做的實例化方法 : 在組 sql 語法前, 判定欄位是否有關鍵字, 並將關鍵字轉為加上跳脫字元的樣式
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        protected abstract string ConvertEscapeStr(string name);
+
+        /// <summary>
+        /// 需實做的實例化方法 : 讓不同的資料庫實做, 取得特化的 DbParameter (ex OracleParameter, SqlParameter ...)
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -81,7 +96,7 @@ namespace rbt.util.db
             StringBuilder sqlSB = new StringBuilder();
             foreach (string column in selectColumns)
             {
-                sqlSB.Append("," + column + " ");
+                sqlSB.Append("," + this.ConvertEscapeStr(column) + " ");
             }
             return "SELECT " + sqlSB.ToString().Substring(1) + " ";
         }
@@ -128,7 +143,7 @@ namespace rbt.util.db
                 {
                     //前綴帶 ## 時, 代表 value 為 function, 需將 columnName 換回正確名稱
                     var myColumnName = columnName.Substring(2);
-                    sqlSB += myColumnName + ", ";
+                    sqlSB += this.ConvertEscapeStr(myColumnName) + ", ";
                 }
                 else if (insertColumnsInfo[columnName] != null && !DBNull.Value.Equals(insertColumnsInfo[columnName]))
                 {
@@ -136,7 +151,7 @@ namespace rbt.util.db
                     if (StringUtil.IsEmpty(insertColumnsInfo[columnName]) && this.dbType == DB_TYPE.ORACLE) continue;
 
                     //不為空值時,該欄位才 insert
-                    sqlSB += columnName + ", ";
+                    sqlSB += this.ConvertEscapeStr(columnName) + ", ";
                 }
             }
             // 最後一個逗號換成右刮號
@@ -227,7 +242,7 @@ namespace rbt.util.db
                     {
                         //oracle , 為空時 不insert
                         if (StringUtil.IsEmpty(propValue) && this.dbType == DB_TYPE.ORACLE) continue;
-                        sqlSB += property.Name + ", ";
+                        sqlSB += this.ConvertEscapeStr(property.Name) + ", ";
                     }
                 }
             }
@@ -327,22 +342,22 @@ namespace rbt.util.db
             {
                 if (setColumnsInfo[columnName] == null)
                 {
-                    sqlSB += columnName + " = null, ";
+                    sqlSB += this.ConvertEscapeStr(columnName) + " = null, ";
                 }
                 else if (columnName.StartsWith("##"))
                 {
                     //key 前綴帶 ## 時, 代表 value 為 function
-                    sqlSB += columnName.Substring(2) + " = " + StringUtil.SafeTrim(setColumnsInfo[columnName]) + ", ";
+                    sqlSB += this.ConvertEscapeStr(columnName.Substring(2)) + " = " + StringUtil.SafeTrim(setColumnsInfo[columnName]) + ", ";
                 }
                 else
                 {
                     if (isSetParam)
                     {
-                        sqlSB += columnName + " = '" + procEscChar(setColumnsInfo[columnName]) + "', ";
+                        sqlSB += this.ConvertEscapeStr(columnName) + " = '" + procEscChar(setColumnsInfo[columnName]) + "', ";
                     }
                     else
                     {
-                        sqlSB += columnName + " = " + this.getPramChar() + "SET_" + columnName + ", ";
+                        sqlSB += this.ConvertEscapeStr(columnName) + " = " + this.getPramChar() + "SET_" + columnName + ", ";
                         resultParamsList.Add(NewDbParameter("" + this.getPramChar() + "SET_" + columnName, setColumnsInfo[columnName]));
                     }
                 }
@@ -434,7 +449,7 @@ namespace rbt.util.db
                 if (value == null)
                 {
                     // 傳入值為 null
-                    sqlSB.Append(columnName + " is null and ");
+                    sqlSB.Append(this.ConvertEscapeStr(columnName) + " is null and ");
                 }
                 else if (object.ReferenceEquals(valueType, typeof(List<string>)))
                 {
@@ -444,7 +459,7 @@ namespace rbt.util.db
                     {
                         continue;
                     }
-                    sqlSB.Append(columnName + " in (" + GenInSql(list) + ") and ");
+                    sqlSB.Append(this.ConvertEscapeStr(columnName) + " in (" + GenInSql(list) + ") and ");
                 }
                 else if (object.ReferenceEquals(valueType, typeof(string[])))
                 {
@@ -454,7 +469,7 @@ namespace rbt.util.db
                     {
                         continue;
                     }
-                    sqlSB.Append(columnName + " in (" + GenInSql(strAry) + ") and ");
+                    sqlSB.Append(this.ConvertEscapeStr(columnName) + " in (" + GenInSql(strAry) + ") and ");
                 }
                 else if (columnName.StartsWith("%%"))
                 {
@@ -462,7 +477,7 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(2);
                     paramName = paramName.Replace("%%", "");
                     resultParamsList.Add(NewDbParameter(paramName, "%" + value + "%"));
-                    sqlSB.Append(myColumnName + " like " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " like " + paramName + " and ");
                 }
                 else if (columnName.StartsWith("#@!"))
                 {
@@ -470,14 +485,14 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(3);
                     paramName = paramName.Replace("#@!", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " like " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " like " + paramName + " and ");
                 }
                 else if (columnName.StartsWith("!@#"))
                 {
                     //陳述式
                     string myColumnName = columnName.Substring(3);
                     paramName = paramName.Replace("!@#", "");
-                    sqlSB.Append(myColumnName + " " + value + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " " + value + " and ");
                 }
                 else if (columnName.StartsWith(">="))
                 {
@@ -485,7 +500,7 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(2);
                     paramName = paramName.Replace(">=", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " >= " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " >= " + paramName + " and ");
                 }
                 else if (columnName.StartsWith("<="))
                 {
@@ -493,7 +508,7 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(2);
                     paramName = paramName.Replace("<=", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " <= " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " <= " + paramName + " and ");
                 }
                 else if (columnName.StartsWith("<>"))
                 {
@@ -501,7 +516,7 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(2);
                     paramName = paramName.Replace("<>", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " <> " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " <> " + paramName + " and ");
                 }
                 else if (columnName.StartsWith(">"))
                 {
@@ -509,7 +524,7 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(1);
                     paramName = paramName.Replace(">", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " > " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " > " + paramName + " and ");
                 }
                 else if (columnName.StartsWith("<"))
                 {
@@ -517,13 +532,13 @@ namespace rbt.util.db
                     string myColumnName = columnName.Substring(1);
                     paramName = paramName.Replace("<", "");
                     resultParamsList.Add(NewDbParameter(paramName, value));
-                    sqlSB.Append(myColumnName + " < " + paramName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(myColumnName) + " < " + paramName + " and ");
                 }
                 else
                 {
                     //一般
                     resultParamsList.Add(NewDbParameter("" + this.getPramChar() + "WHERE_" + columnName, value));
-                    sqlSB.Append(columnName + " = " + this.getPramChar() + "WHERE_" + columnName + " and ");
+                    sqlSB.Append(this.ConvertEscapeStr(columnName) + " = " + this.getPramChar() + "WHERE_" + columnName + " and ");
                 }
             }
 
@@ -602,7 +617,7 @@ namespace rbt.util.db
             {
                 if (StringUtil.NotEmpty(param))
                 {
-                    result += ", " + StringUtil.SafeTrim(param);
+                    result += ", " + this.ConvertEscapeStr(StringUtil.SafeTrim(param));
                 }
             }
 
@@ -619,19 +634,5 @@ namespace rbt.util.db
             value = value.Replace("\"", "\\\"");
             return value;
         }
-
-        //Private Shared Function RecursionSetParam(BycolumnName As String, Byvalue As Object, ByresultParamsList As List(Of DbParameter)) As String
-
-        //    Dim paramName As String = ":" & columnName
-
-        //    For Each DbParameter As DbParameter In resultParamsList.ToArray()
-        //        If DbParameter.ParameterName.Equals(paramName) Then
-        //            Return RecursionSetParam((columnName & "_NEXT"), value, resultParamsList)
-        //        End If
-        //    Next
-        //    resultParamsList.Add(NewDbParameter(paramName, value))
-        //    Return paramName
-
-        //End Function
     }
 }

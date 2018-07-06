@@ -79,6 +79,26 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\rbt.util.db.npg\rbt.util.db.npg.csproj">
+      <Project>{cfd0c640-01dd-4031-add4-510c54de92c1}</Project>
+      <Name>rbt.util.db.npg</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\rbt.util.db.oracle\rbt.util.db.oracle.csproj">
+      <Project>{03418681-4d43-44fc-9942-b8710c14de7f}</Project>
+      <Name>rbt.util.db.oracle</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\rbt.util.db.sqlite\rbt.util.db.sqlite.csproj">
+      <Project>{c7f25ac5-0de2-4d5f-b0e7-9bf8a931de07}</Project>
+      <Name>rbt.util.db.sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\rbt.util.db.sql\rbt.util.db.sql.csproj">
+      <Project>{6cc58a5d-c526-4689-a1c1-2f12ca069eed}</Project>
+      <Name>rbt.util.db.sql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\rbt.util.excel\rbt.util.excel.csproj">
+      <Project>{b5dbcd16-32e2-489b-9de7-a4a41fec1945}</Project>
+      <Name>rbt.util.excel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\rbt\rbt.csproj">
       <Project>{3C9A16F9-3E6A-44E9-93FB-0BC9513D0005}</Project>
       <Name>rbt</Name>

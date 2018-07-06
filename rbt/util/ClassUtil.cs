@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 
 namespace rbt.util
 {
@@ -72,6 +73,37 @@ namespace rbt.util
             });
 
             return ConvertFuncMap;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="bMsg"></param>
+        /// <returns></returns>
+        public static T ByteArrayToStructure<T>(byte[] bMsg)
+        {
+            IntPtr intPtr = Marshal.AllocHGlobal((int)bMsg.Length);
+            Marshal.Copy(bMsg, 0, intPtr, (int)bMsg.Length);
+            T structure = (T)Marshal.PtrToStructure(intPtr, typeof(T));
+            Marshal.FreeHGlobal(intPtr);
+            return structure;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static byte[] StructureToByteArray(object obj)
+        {
+            int num = Marshal.SizeOf(obj);
+            byte[] numArray = new byte[num];
+            IntPtr intPtr = Marshal.AllocHGlobal(num);
+            Marshal.StructureToPtr(obj, intPtr, true);
+            Marshal.Copy(intPtr, numArray, 0, num);
+            Marshal.FreeHGlobal(intPtr);
+            return numArray;
         }
     }
 }
