@@ -277,7 +277,8 @@ namespace rbt.util
         public IList<string> ScanDirectoryFile(
             string targetDirectory,
             string[] extensionFilters = null,
-            Action<string> realtimeActionWhenFind = null)
+            Action<string> realtimeActionWhenFind = null,
+            Action<string> whenEnterNewDir = null)
         {
             //將副檔名都轉小寫, 以免比對錯誤
             for (int i = 0; extensionFilters != null && i < extensionFilters.Length; i++)
@@ -286,7 +287,7 @@ namespace rbt.util
             }
 
             //Scan
-            return RecursiveScan(targetDirectory, extensionFilters, realtimeActionWhenFind);
+            return RecursiveScan(targetDirectory, extensionFilters, realtimeActionWhenFind, whenEnterNewDir);
         }
 
         /// <summary>
@@ -299,11 +300,19 @@ namespace rbt.util
         private IList<string> RecursiveScan(
             string targetDirectory,
             string[] extensionFilters = null,
-            Action<string> realtimeActionWhenFind = null)
+            Action<string> realtimeActionWhenFind = null,
+            Action<string> whenEnterNewDir = null)
         {
             IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
             WinApi.WIN32_FIND_DATAW findData;
             IntPtr findHandle = INVALID_HANDLE_VALUE;
+
+            //檢查目錄前, 通常用於外部呼叫者定義顯示掃目錄
+            //於console 中顯示掃描目錄
+            if (whenEnterNewDir != null)
+            {
+                whenEnterNewDir(targetDirectory);
+            }
 
             var info = new List<string>();
             try
@@ -320,10 +329,17 @@ namespace rbt.util
                         if ((findData.dwFileAttributes & System.IO.FileAttributes.Directory) != 0)
                         {
                             //為目錄時遞迴
-                            info.AddRange(RecursiveScan(fullpath, extensionFilters, realtimeActionWhenFind));
+                            info.AddRange(RecursiveScan(fullpath, extensionFilters, realtimeActionWhenFind, whenEnterNewDir));
                         }
                         else
                         {
+                            var extension = ZlpPathHelper.GetExtension(fullpath);
+
+                            if (".xdormdecodebackup" == extension)
+                            {
+                                var a = 1;
+                            }
+
                             //副檔名過濾 (前一個方法已全部轉小寫, 故此處以小寫比對)
                             if (extensionFilters != null &&
                                 ZlpPathHelper.GetExtension(fullpath).ToLower().NotIn(extensionFilters))
