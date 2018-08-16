@@ -13,32 +13,10 @@ namespace rbt.util
     public class FileUtil
     {
         /// <summary>
-        /// StringBuffer
-        /// </summary>
-        private StringBuilder stringBuffer;
-
-        /// <summary>
-        /// 斷行符號 (windows 是 "\r\n" Unix 是 "\n")
-        /// </summary>
-        private string BROKEN_LINE_SYMBOL_Renamed = "\n";
-
-        /// <summary>
-        /// 寫出檔案是否為 是否寫入UTF8 BOM 使用
-        /// </summary>
-        private bool useUTF8BOM = true;
-
-        /// <summary>
-        /// 輸出檔案編碼
-        /// </summary>
-        private System.Text.Encoding myencoding = null;
-
-        /// <summary>
         /// 建構子
         /// </summary>
         public FileUtil()
         {
-            this.stringBuffer = new StringBuilder();
-            encoding = System.Text.Encoding.UTF8;
         }
 
         // =========================================================================================
@@ -46,49 +24,19 @@ namespace rbt.util
         // =========================================================================================
 
         /// <summary>
-        /// 將內容寫入檔案 </summary>
-        /// <param name="fileFullPath"> 完整路徑 + 檔案名稱 </param>
-        /// <exception cref="Exception"> </exception>
-        public virtual void WriteBufferToFile(string fileFullPath)
-        {
-            // 檢核路徑
-            var directory = ZlpPathHelper.GetDirectoryPathNameFromFilePath(fileFullPath);
-            DirectoryVerifyExistsAndCreate(directory);
-
-            using (var fos = new ZlpFileInfo(fileFullPath).OpenCreate())
-            {
-                // 印出訊息
-                Console.WriteLine("寫入 " + fileFullPath);
-
-                var bb = encoding.GetBytes(this.stringBuffer.ToString());
-
-                if (this.useUTF8BOM)
-                {
-                    // 寫入 UTF8 HEADER
-                    fos.WriteByte(0xEF);
-                    fos.WriteByte(0xBB);
-                    fos.WriteByte(0xBF);
-
-                    // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-                else
-                {
-                    // 寫入檔案
-                    fos.Write(bb, 0, bb.Length);
-                }
-            }
-        }
-
-        /// <summary>
         /// 將傳入之文字，寫入檔案 (編碼請使用 setEncoding 設定) </summary>
         /// <param name="content"> </param>
         /// <param name="path"> </param>
         /// <param name="fileName"> </param>
         /// <exception cref="Exception"> </exception>
-        public void WriteToFile(string content, string fileFullPath)
+        public void WriteToFile(string content, string fileFullPath, Encoding encoding = null, bool useUTF8BOM = true)
         {
-            this.WriteToFile(encoding.GetBytes(content), fileFullPath);
+            if (encoding == null)
+            {
+                encoding = Encoding.UTF8;
+            }
+
+            this.WriteToFile(encoding.GetBytes(content), fileFullPath, useUTF8BOM);
         }
 
         /// <summary>
@@ -97,7 +45,7 @@ namespace rbt.util
         /// <param name="path"> 檔案路徑 </param>
         /// <param name="fileName"> 檔案名稱 </param>
         /// <exception cref="Exception"> </exception>
-        public void WriteToFile(byte[] data, string fileFullPath)
+        public void WriteToFile(byte[] data, string fileFullPath, bool useUTF8BOM = true)
         {
             // 檢核路徑
             var directory = ZlpPathHelper.GetDirectoryPathNameFromFilePath(fileFullPath);
@@ -108,9 +56,7 @@ namespace rbt.util
                 // 印出訊息
                 Console.WriteLine("寫入 " + fileFullPath);
 
-                var bb = encoding.GetBytes(this.stringBuffer.ToString());
-
-                if (this.useUTF8BOM)
+                if (useUTF8BOM)
                 {
                     // 寫入 UTF8 HEADER
 
@@ -126,47 +72,6 @@ namespace rbt.util
                     // 寫入檔案
                     fos.Write(data, 0, data.Length);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 取得輸出檔案編碼 </summary>
-        /// <returns> encoding </returns>
-        public virtual Encoding encoding
-        {
-            get
-            {
-                return myencoding;
-            }
-            set
-            {
-                myencoding = value;
-            }
-        }
-
-        /// <summary>
-        /// 設定輸出檔案的斷行符號，預設為『\n』(windows 為 \r\n) </summary>
-        /// <param name="bROKENLINESYMBOL"> BROKEN_LINE_SYMBOL </param>
-        public virtual string BROKEN_LINE_SYMBOL
-        {
-            set
-            {
-                this.BROKEN_LINE_SYMBOL_Renamed = value;
-            }
-        }
-
-        /// <summary>
-        /// 設定輸出檔案是否為有BOM的UTF8檔案 </summary>
-        /// <param name="useUTF8BOM"> useUTF8BOM </param>
-        public virtual bool UseUTF8BOM
-        {
-            set
-            {
-                if (value)
-                {
-                    Console.WriteLine("目前輸出檔案設定編碼為:" + this.encoding + ",設定此項目為true後，編碼設定將不生效");
-                }
-                this.useUTF8BOM = value;
             }
         }
 
