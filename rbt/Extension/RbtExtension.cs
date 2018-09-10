@@ -369,5 +369,16 @@ namespace rbt.Extension
 
             return message;
         }
+
+        /// <summary>
+        /// String 擴充方法, 以長度分割字串
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="chunkSize"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitWithLength(this string str, int chunkSize)
+        {
+            return StringUtil.SplitWithLength(str, chunkSize);
+        }
     }
 }

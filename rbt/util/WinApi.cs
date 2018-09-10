@@ -312,5 +312,8 @@ namespace rbt.util
                                                         FileMode dwCreationDisposition,
                                                         FileOptions dwFlagsAndAttributes,
                                                         IntPtr hTemplateFile);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetLastError();
     }
 }

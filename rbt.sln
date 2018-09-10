@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt.util.db.sqlite", "rbt.u
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt.util.excel", "rbt.util.excel\rbt.util.excel.csproj", "{B5DBCD16-32E2-489B-9DE7-A4A41FEC1945}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rbt.Test", "rbt.Test\rbt.Test.csproj", "{0BB071AB-91AA-4195-A8B4-849DD589A60E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{B5DBCD16-32E2-489B-9DE7-A4A41FEC1945}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5DBCD16-32E2-489B-9DE7-A4A41FEC1945}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5DBCD16-32E2-489B-9DE7-A4A41FEC1945}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BB071AB-91AA-4195-A8B4-849DD589A60E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BB071AB-91AA-4195-A8B4-849DD589A60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BB071AB-91AA-4195-A8B4-849DD589A60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BB071AB-91AA-4195-A8B4-849DD589A60E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

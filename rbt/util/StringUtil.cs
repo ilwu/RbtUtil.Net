@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace rbt.util
@@ -145,6 +147,70 @@ namespace rbt.util
                 return defaultStr;
             }
             return s.ToString().Trim();
+        }
+
+        /// <summary>
+        /// 依據傳入長度分割字串
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="chunkSize"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> SplitWithLength(string str, int desiredLength, bool strict = false)
+        {
+            if (desiredLength < 1)
+            {
+                throw new Exception("傳入的長度參數小於1 :[" + desiredLength + "]");
+            }
+
+            if (str == null || str == "")
+            {
+                return new List<string>();
+            }
+
+            EnsureValid(str, desiredLength, strict);
+
+            var stringInfo = new StringInfo(str);
+
+            int currentLength = stringInfo.LengthInTextElements;
+            if (currentLength == 0) { return new string[0]; }
+
+            int numberOfItems = currentLength / desiredLength;
+
+            int remaining = (currentLength > numberOfItems * desiredLength) ? 1 : 0;
+
+            var chunks = new string[numberOfItems + remaining];
+
+            for (var i = 0; i < numberOfItems; i++)
+            {
+                chunks[i] = stringInfo.SubstringByTextElements(i * desiredLength, desiredLength);
+            }
+
+            if (remaining != 0)
+            {
+                chunks[numberOfItems] = stringInfo.SubstringByTextElements(numberOfItems * desiredLength);
+            }
+
+            return chunks;
+        }
+
+        private static void EnsureValid(string value, int desiredLength, bool strict)
+        {
+            if (value == null) { throw new ArgumentNullException(value); }
+
+            if (value.Length == 0 && desiredLength != 0)
+            {
+                throw new ArgumentException(@"The passed {nameof(value)} may not be empty if the {nameof(desiredLength)} <> 0");
+            }
+
+            var info = new StringInfo(value);
+            int valueLength = info.LengthInTextElements;
+
+            if (valueLength != 0 && desiredLength < 1) { throw new ArgumentException(@"The value of {nameof(desiredLength)} needs to be > 0"); }
+
+            if (strict && (valueLength % desiredLength != 0))
+            {
+                throw new ArgumentException(@"The passed {nameof(value)}'s length can't be split by the {nameof(desiredLength)}");
+            }
         }
 
         // =============================================================================

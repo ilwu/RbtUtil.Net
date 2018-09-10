@@ -240,11 +240,6 @@ namespace rbt.util
                         {
                             var extension = ZlpPathHelper.GetExtension(fullpath);
 
-                            if (".xdormdecodebackup" == extension)
-                            {
-                                var a = 1;
-                            }
-
                             //副檔名過濾 (前一個方法已全部轉小寫, 故此處以小寫比對)
                             if (extensionFilters != null &&
                                 ZlpPathHelper.GetExtension(fullpath).ToLower().NotIn(extensionFilters))
