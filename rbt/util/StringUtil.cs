@@ -527,5 +527,26 @@ namespace rbt.util
             str = textInfo.ToTitleCase(str.ToLower());
             return str.Replace(" ", "");
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="milliseconds"></param>
+        /// <returns></returns>
+        public static string GetTimeStr(double milliseconds)
+        {
+            //總秒數
+            var totalSeconds = milliseconds / 1000;
+
+            //小時
+            int hour = (int)(totalSeconds / 60 / 60);  // 除以3600 後取整為小時
+            int minutes = (int)((totalSeconds - (hour * 60 * 60)) / 60);  //減掉小時的秒數後, 除以 60 取整為分
+            double seconds = (totalSeconds - (hour * 60 * 60) - (minutes * 60));//減掉小時、分的秒數後為秒
+
+            var str = hour > 0 ? hour + "時 " : "";
+            str += minutes > 0 ? minutes + "分 " : "";
+            str += seconds + "秒";
+            return str;
+        }
     }
 }

@@ -183,6 +183,33 @@ namespace rbt.Extension
             return (T)value;
         }
 
+        public static IList<T> SafeGetValue<TSource, T>(this IList<TSource> modelList, Expression<Func<TSource, T>> exp)
+        {
+            var resultList = new List<T>();
+
+            if (modelList == null)
+            {
+                return resultList;
+            }
+
+            string propName = ((MemberExpression)exp.Body).Member.Name;
+
+            foreach (TSource model in modelList)
+            {
+                object value = model.GetType().GetProperty(propName).GetValue(model);
+
+                if (value == null)
+                {
+                    resultList.Add(default(T));
+                }
+                else
+                {
+                    resultList.Add((T)value);
+                }
+            }
+            return resultList;
+        }
+
         /// <summary>
         /// 針對 IDictionary 提供的安全取值方法, 可避免 dictionary 為空, 或 key 未包含在 dictionary 時所造成的 exception
         /// </summary>
@@ -357,9 +384,14 @@ namespace rbt.Extension
         public static string ToWellMessage(this Exception ex, string prefixMessage, int maxLength = -1)
         {
             //組錯誤訊息
-            var message = System.Environment.NewLine + prefixMessage +
-                   (prefixMessage.NotEmpty() ? ":" : "") + ex.Message + System.Environment.NewLine +
-                   ex.StackTrace;
+            var message =
+                //System.Environment.NewLine +
+                    prefixMessage +
+                    System.Environment.NewLine +
+                    ex.GetType().ToString() +
+                    System.Environment.NewLine +
+                    (prefixMessage.NotEmpty() ? ":" : "") + ex.Message + System.Environment.NewLine +
+                    ex.StackTrace;
 
             //長度限制
             if (maxLength != -1 && message.Length > maxLength)
